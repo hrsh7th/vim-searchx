@@ -15,6 +15,11 @@ cnoremap <C-k> <Cmd>call searchx#prev()<CR>
 let g:searchx = {}
 
 "
+" You can disable or enable fuzzy matching fallback.
+"
+let g:searchx.fuzzy = v:true
+
+"
 " You can customize regex pattern via `g:searchx.convert`.
 "
 function g:searchx.convert(input) abort

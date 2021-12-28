@@ -138,11 +138,13 @@ function! s:on_input() abort
       call winrestview(s:state.firstview)
     endif
     let s:state.matches = s:find_matches(l:input, [s:state.firstview.lnum, s:state.firstview.col])
-    if len(s:state.matches.matches) == 0 && strlen(getreg('/')) < strlen(l:input)
-      let l:input = getreg('/') .. '\ze.\{-}' .. strpart(l:input, strlen(getreg('/')))
-      let s:state.matches = s:find_matches(l:input, [s:state.firstview.lnum, s:state.firstview.col])
-      call searchx#_pause()
-      call feedkeys("\<C-u>" .. l:input .. "\<Cmd>call searchx#_resume()\<CR>", 'n')
+    if g:searchx.fuzzy
+      if len(s:state.matches.matches) == 0 && strlen(getreg('/')) < strlen(l:input)
+        let l:input = getreg('/') .. '\ze.\{-}' .. strpart(l:input, strlen(getreg('/')))
+        let s:state.matches = s:find_matches(l:input, [s:state.firstview.lnum, s:state.firstview.col])
+        call searchx#_pause()
+        call feedkeys("\<C-u>" .. l:input .. "\<Cmd>call searchx#_resume()\<CR>", 'n')
+      endif
     endif
     call setreg('/', l:input)
     call s:refresh({ 'marker': v:true })

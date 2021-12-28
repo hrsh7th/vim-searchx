@@ -30,6 +30,8 @@ function! searchx#run(...) abort
     elseif !s:auto_accept
       call s:refresh({ 'marker': v:false, 'incsearch': v:false, })
       call feedkeys("\<Cmd>let v:hlsearch = v:true\<CR>", 'n')
+    else
+      call feedkeys("\<Cmd>let v:hlsearch = v:false\<CR>", 'n')
     endif
   endtry
 endfunction

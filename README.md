@@ -13,8 +13,22 @@ cnoremap <C-j> <Cmd>call searchx#next()<CR>
 cnoremap <C-k> <Cmd>call searchx#prev()<CR>
 
 let g:searchx = {}
+
+"
+" You can customize regex pattern via `g:searchx.convert`.
+"
 function g:searchx.convert(input) abort
-  return join(split(input, ' '), '.\{-}')
+  let l:input = a:input
+
+  " <Space> as fuzzy match separator.
+  let l:input = join(split(l:input, ' '), '.\{-}')
+
+  " / as word-end identifier.
+  if l:input[strlen(l:input) - 1] ==# '/'
+    let l:input = l:input[0 : strlen(l:input) - 2] .. '\k*\zs.'
+  endif
+
+  return l:input
 endfunction
 ```
 

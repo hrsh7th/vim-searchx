@@ -9,7 +9,7 @@ let s:Direction.Next = 1
 let s:state = {}
 let s:state.timer = -1
 let s:state.direction = s:Direction.Next
-let s:state.execute_curpos = [-1, -1]
+let s:state.firstview = v:null
 let s:state.matches = { 'matches': [], 'current': v:null }
 let s:state.accept_reason = s:AcceptReason.Marker
 
@@ -19,7 +19,7 @@ let s:state.accept_reason = s:AcceptReason.Marker
 function! searchx#run(...) abort
   let s:state.timer = timer_start(100, { -> s:on_input() }, { 'repeat': -1 })
   let s:state.direction = get(a:000, 0, s:detect_direction())
-  let s:state.execute_curpos = getcurpos()[1:2]
+  let s:state.firstview = winsaveview()
   let s:state.accept_reason = s:AcceptReason.Return
   let v:hlsearch = v:true
   try
@@ -31,7 +31,9 @@ function! searchx#run(...) abort
     call s:clear()
 
     if l:return ==# ''
-      call cursor(s:state.execute_curpos[0], s:state.execute_curpos[1])
+      if !empty(s:state.firstview)
+        call winrestview(s:state.firstview)
+      endif
     elseif s:state.accept_reason == s:AcceptReason.Marker
       call feedkeys("\<Cmd>let v:hlsearch = v:false\<CR>", 'n')
     else
@@ -92,7 +94,7 @@ endfunction
 "
 function! s:on_input() abort
   try
-    let l:input = getcmdline()
+    let l:input = g:searchx.convert(getcmdline())
     if getreg('/') ==# l:input
       return
     endif
@@ -113,8 +115,11 @@ function! s:on_input() abort
     endif
 
     " Update view state.
+    if strlen(getreg('/')) > strlen(l:input)
+      call winrestview(s:state.firstview)
+    endif
     call setreg('/', l:input)
-    let s:state.matches = s:find_matches(getreg('/'), s:state.execute_curpos)
+    let s:state.matches = s:find_matches(getreg('/'), [s:state.firstview.lnum, s:state.firstview.col])
     call s:refresh({ 'marker': v:true })
 
     " Search for out-of-window match via native `searchpos`.
@@ -179,7 +184,7 @@ function! s:find_matches(input, curpos) abort
     let l:off = 0
     while l:off < strlen(l:text)
       let l:m = matchstrpos(l:text, a:input, l:off, 1)
-      if l:m[0] ==# '' || (l:m[2] - l:m[1]) >= strlen(l:text)
+      if l:m[0] ==# ''
         break
       endif
 

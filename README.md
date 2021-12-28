@@ -11,6 +11,11 @@ nnoremap n <Cmd>call searchx#next()<CR>
 nnoremap N <Cmd>call searchx#prev()<CR>
 cnoremap <C-j> <Cmd>call searchx#next()<CR>
 cnoremap <C-k> <Cmd>call searchx#prev()<CR>
+
+let g:searchx = {}
+function g:searchx.convert(input) abort
+  return join(split(input, ' '), '.\{-}')
+endfunction
 ```
 
 

@@ -1,5 +1,7 @@
 A plugin that improves experimental /.
+
 I've written a lot of similar plugins and thrown them away.
+
 I don't know if to maintain this.
 
 ```vim
@@ -12,3 +14,10 @@ cnoremap <C-k> <Cmd>call searchx#prev()<CR>
 ```
 
 
+### similar plugins
+
+- [vim-seak](https://github.com/hrsh7th/vim-seak)
+- [vim-foolish-move](https://github.com/hrsh7th/vim-foolish-move)
+- [vim-feeling-move](https://github.com/hrsh7th/vim-feeling-move)
+- [vim-aim](https://github.com/hrsh7th/vim-aim)
+- [vim-insert-point](https://github.com/hrsh7th/vim-aim)

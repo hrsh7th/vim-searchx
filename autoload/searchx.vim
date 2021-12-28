@@ -118,8 +118,8 @@ function! s:on_input() abort
     if strlen(getreg('/')) > strlen(l:input)
       call winrestview(s:state.firstview)
     endif
+    let s:state.matches = s:find_matches(l:input, [s:state.firstview.lnum, s:state.firstview.col])
     call setreg('/', l:input)
-    let s:state.matches = s:find_matches(getreg('/'), [s:state.firstview.lnum, s:state.firstview.col])
     call s:refresh({ 'marker': v:true })
 
     " Search for out-of-window match via native `searchpos`.

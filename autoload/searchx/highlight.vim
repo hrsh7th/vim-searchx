@@ -52,7 +52,7 @@ else
   " clear_marker
   "
   function! s:clear_marker() abort
-    call prop_remove({ 'both': v:true, 'type': 'searchx_marker' })
+    call prop_remove({ 'type': 'searchx_marker' })
   endfunction
 endif
 

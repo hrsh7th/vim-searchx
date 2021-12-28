@@ -7,12 +7,23 @@ I don't know if to maintain this.
 ```vim
 nnoremap / <Cmd>call searchx#run(1)<CR>
 nnoremap ? <Cmd>call searchx#run(0)<CR>
+xnoremap / <Cmd>call searchx#run(1)<CR>
+xnoremap ? <Cmd>call searchx#run(0)<CR>
+
 nnoremap n <Cmd>call searchx#next()<CR>
 nnoremap N <Cmd>call searchx#prev()<CR>
+xnoremap n <Cmd>call searchx#next()<CR>
+xnoremap N <Cmd>call searchx#prev()<CR>
+
 cnoremap <C-j> <Cmd>call searchx#next()<CR>
 cnoremap <C-k> <Cmd>call searchx#prev()<CR>
 
 let g:searchx = {}
+
+"
+" You can customize markers.
+"
+let g:searchx.markers = split('asdfghjkl;', '.\zs')
 
 "
 " You can customize regex pattern via `g:searchx.convert`.

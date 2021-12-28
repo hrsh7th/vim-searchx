@@ -154,34 +154,26 @@ endfunction
 " find_matches
 "
 function! s:find_matches(input, curpos) abort
-  let l:curpos = getcurpos()[1:2]
-  let l:saved_scrolloff = &scrolloff
-  let l:saved_sidescrolloff = &sidescrolloff
-  let &scrolloff = 0
-  let &sidescrolloff = 0
-
+  let l:lnum_s = line('w0')
+  let l:lnum_e = line('w$')
+  let l:texts = getbufline('%', l:lnum_s, l:lnum_e)
   let l:next = v:null
   let l:prev = v:null
   let l:matches = []
-  try
-    call cursor(line('w0'), 1)
-    let l:stopline = line('w$')
-    while v:true
-      let l:pos = searchpos(a:input, 'Wzn', l:stopline, 1000)
-      if l:pos[0] == 0
+  for l:i in range(0, len(l:texts) - 1)
+    let l:text = l:texts[l:i]
+    let l:off = 0
+    while l:off < strlen(l:text)
+      let l:m = matchstrpos(l:text, a:input, l:off, 1)
+      if l:m[0] ==# ''
         break
-      endif
-      call cursor(l:pos[0], l:pos[1])
-      let l:m = matchstrpos(getline(l:pos[0]), a:input, l:pos[1] - 1, 1)
-      if l:m[0] == ''
-        continue
       endif
 
       let l:match = {
       \   'id': len(l:matches) + 1,
-      \   'lnum': l:pos[0],
-      \   'col': l:pos[1],
-      \   'end_col': l:pos[1] + (l:m[2] - l:m[1]),
+      \   'lnum': l:lnum_s + l:i,
+      \   'col': l:m[1] + 1,
+      \   'end_col': l:m[2] + 1,
       \   'marker': get(g:searchx.markers, len(l:matches), v:null),
       \ }
       if empty(l:next) && (a:curpos[0] < l:match.lnum || a:curpos[0] == l:match.lnum && a:curpos[1] <= l:match.col)
@@ -191,14 +183,9 @@ function! s:find_matches(input, curpos) abort
         let l:prev = l:match
       endif
       call add(l:matches, l:match)
+      let l:off = l:match.end_col
     endwhile
-  catch /.*/
-  finally
-    call cursor(l:curpos[0], l:curpos[1])
-    let &scrolloff = l:saved_scrolloff
-    let &sidescrolloff = l:saved_sidescrolloff
-  endtry
-
+  endfor
   let l:next = empty(l:next) ? l:prev : l:next
   let l:prev = empty(l:prev) ? l:next : l:prev
   let l:current = s:state.is_next ? l:next : l:prev

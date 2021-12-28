@@ -12,44 +12,34 @@ let s:state.firstview = v:null
 let s:state.matches = { 'matches': [], 'current': v:null }
 let s:state.accept_reason = s:AcceptReason.Marker
 
-let s:paused = v:false
-
 "
 " searchx#run
 "
 function! searchx#run(...) abort
-  augroup searchx-run
-    autocmd!
-    autocmd CmdlineChanged * call s:on_input()
-  augroup END
-
   let s:state.direction = get(a:000, 0, s:detect_direction())
   let s:state.firstview = winsaveview()
   let s:state.accept_reason = s:AcceptReason.Return
   let v:hlsearch = v:true
-  try
-    let l:return = input('/')
-  catch /.*/
-    echomsg string({ 'exception': v:exception, 'throwpoint': v:throwpoint })
-  finally
-    augroup searchx-run
-      autocmd!
-    augroup END
 
-    call s:clear()
+  augroup searchx-run
+    autocmd!
+    autocmd CmdlineChanged * call s:on_input()
+  augroup END
+  let l:return = input('/')
+  augroup searchx-run
+    autocmd!
+  augroup END
 
-    call s:markpos([s:state.firstview.lnum, s:state.firstview.col])
-
-    if l:return ==# ''
-      if !empty(s:state.firstview)
-        call winrestview(s:state.firstview)
-      endif
-    elseif index([s:AcceptReason.Marker], s:state.accept_reason) >= 0
-      call feedkeys("\<Cmd>let v:hlsearch = v:false\<CR>", 'n')
-    else
-      call feedkeys("\<Cmd>let v:hlsearch = v:true\<CR>", 'n')
-    endif
-  endtry
+  call s:clear()
+  if l:return ==# ''
+    return winrestview(s:state.firstview)
+  elseif index([s:AcceptReason.Marker], s:state.accept_reason) >= 0
+    call s:markpos(s:state.firstview)
+    call feedkeys("\<Cmd>let v:hlsearch = v:false\<CR>", 'n')
+  else
+    call s:markpos(s:state.firstview)
+    call feedkeys("\<Cmd>let v:hlsearch = v:true\<CR>", 'n')
+  endif
 endfunction
 
 "
@@ -86,11 +76,12 @@ endfunction
 "
 " s:markpos
 "
-function! s:markpos(pos) abort
-  let l:curpos = getcurpos()[1:2]
-  call cursor(a:pos[0], a:pos[1])
+function! s:markpos(firstview) abort
+  let l:finalview = winsaveview()
+  call winrestview(a:firstview)
   normal! m`
-  call cursor(l:curpos[0], l:curpos[1])
+  call winrestview(l:finalview)
+  call cursor(l:finalview.lnum, l:finalview.col)
 endfunction
 
 "
@@ -113,22 +104,11 @@ function! s:goto(dir) abort
   endif
 endfunction
 
-function! searchx#_pause() abort
-  let s:paused = v:true
-endfunction
-
-function! searchx#_resume() abort
-  let s:paused = v:false
-  call s:on_input()
-endfunction
 
 "
 " on_input
 "
 function! s:on_input() abort
-  if s:paused
-    return
-  endif
   try
     let l:input = g:searchx.convert(getcmdline())
     if getreg('/') ==# l:input

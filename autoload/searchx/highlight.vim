@@ -2,9 +2,9 @@ if has('nvim')
   let s:marker_ns  = nvim_create_namespace('searchx:marker')
 
   "
-  " marker
+  " set_marker
   "
-  function! searchx#highlight#marker(match) abort
+  function! s:set_marker(match) abort
     if !empty(a:match.marker)
       call nvim_buf_set_extmark(0, s:marker_ns, a:match.lnum - 1, max([0, a:match.col - 2]), {
       \   'id': a:match.id,
@@ -18,32 +18,19 @@ if has('nvim')
   endfunction
 
   "
-  " remove
+  " clear_marker
   "
-  function! searchx#highlight#remove(match) abort
-    call s:remove_incsearch()
-    call nvim_buf_del_extmark(0, s:marker_ns, a:match.id)
+  function! s:clear_marker() abort
+    call nvim_buf_clear_namespace(0, s:marker_ns, 0, -1)
   endfunction
 else
   call prop_type_delete('searchx_marker', {})
   call prop_type_add('searchx_marker', {})
 
   "
-  " incsearch
+  " set_marker
   "
-  function! searchx#highlight#incsearch(match) abort
-    call prop_add(a:match.lnum, a:match.col, {
-    \   'type': 'searchx_incsearch',
-    \   'id': a:match.id,
-    \   'end_lnum': a:match.lnum,
-    \   'end_col': a:match.end_col,
-    \ })
-  endfunction
-
-  "
-  " marker
-  "
-  function! searchx#highlight#marker(match) abort
+  function! s:set_marker(match) abort
     if !empty(a:match.marker)
       call prop_add(a:match.lnum, a:match.col, {
       \   'type': 'searchx_marker',
@@ -62,29 +49,38 @@ else
   endfunction
 
   "
-  " remove
+  " clear_marker
   "
-  function! searchx#highlight#remove(match) abort
-    call s:remove_incsearch()
-    call prop_remove({ 'both': v:true, 'type': 'searchx_marker', 'id': a:match.id })
+  function! s:clear_marker() abort
+    call prop_remove({ 'both': v:true, 'type': 'searchx_marker' })
   endfunction
 endif
 
 
-  let s:incsearch_id = 0
-  "
-  " incsearch
-  "
-  function! searchx#highlight#incsearch(match) abort
-    let s:incsearch_id = matchaddpos('SearchxIncSearch', [[a:match.lnum, a:match.col, a:match.end_col - a:match.col]])
-  endfunction
+let s:incsearch_id = 0
 
-  "
-  " remove_incsearch
-  "
-  function! s:remove_incsearch() abort
-    try
-      silent! call matchdelete(s:incsearch_id)
-    catch /.*/
-    endtry
-  endfunction
+"
+" set_incsearch
+"
+function! searchx#highlight#set_incsearch(match) abort
+  let s:incsearch_id = matchaddpos('SearchxIncSearch', [[a:match.lnum, a:match.col, a:match.end_col - a:match.col]])
+endfunction
+
+"
+" set_marker
+"
+function! searchx#highlight#set_marker(match) abort
+  call s:set_marker(a:match)
+endfunction
+
+"
+" clear
+"
+function! searchx#highlight#clear() abort
+  try
+    silent! call matchdelete(s:incsearch_id)
+  catch /.*/
+  endtry
+  call s:clear_marker()
+endfunction
+

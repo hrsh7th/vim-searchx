@@ -1,11 +1,13 @@
+let s:AcceptReason = {}
+let s:AcceptReason.Marker = 1
+let s:AcceptReason.Return = 2
+
 let s:state = {}
 let s:state.timer = -1
 let s:state.is_next = v:true
 let s:state.execute_curpos = [-1, -1]
-let s:state.current_curpos = [-1, -1]
 let s:state.matches = { 'matches': [], 'current': v:null }
-
-let s:auto_accept = v:false
+let s:state.accept_reason = s:AcceptReason.Marker
 
 "
 " searchx#run
@@ -14,8 +16,7 @@ function! searchx#run(...) abort
   let s:state.timer = timer_start(100, { -> s:on_input() }, { 'repeat': -1 })
   let s:state.is_next = get(a:000, 0, 1) == 1
   let s:state.execute_curpos = getcurpos()[1:2]
-  let s:state.current_curpos = getcurpos()[1:2]
-  let s:auto_accept = v:false
+  let s:state.accept_reason = s:AcceptReason.Return
   let v:hlsearch = v:true
   try
     let l:return = input('/')
@@ -27,38 +28,19 @@ function! searchx#run(...) abort
 
     if l:return ==# ''
       call cursor(s:state.execute_curpos[0], s:state.execute_curpos[1])
-    elseif !s:auto_accept
-      call s:refresh({ 'marker': v:false, 'incsearch': v:false, })
-      call feedkeys("\<Cmd>let v:hlsearch = v:true\<CR>", 'n')
-    else
+    elseif s:state.accept_reason == s:AcceptReason.Marker
       call feedkeys("\<Cmd>let v:hlsearch = v:false\<CR>", 'n')
+    else
+      call feedkeys("\<Cmd>let v:hlsearch = v:true\<CR>", 'n')
     endif
   endtry
 endfunction
 
 "
-" searchx#select
+" searchx#clear
 "
-function! searchx#select() abort
+function! searchx#clear() abort
   call s:clear()
-  let s:state.current_curpos = getcurpos()[1:2]
-  let s:state.matches = s:find_matches(getreg('/'))
-  call s:refresh({ 'incsearch': v:false })
-  redraw
-  let l:mode = mode(1)
-  let l:char = nr2char(getchar())
-  for l:match in s:state.matches.matches
-    if l:match.marker ==# l:char
-      call cursor(l:match.lnum, l:match.col)
-      if mode() ==# 'c'
-        let s:auto_accept = v:true
-        call feedkeys("\<CR>", 'n')
-      else
-        call s:clear()
-      endif
-      return
-    endif
-  endfor
 endfunction
 
 "
@@ -76,13 +58,6 @@ function searchx#prev() abort
 endfunction
 
 "
-" searchx#clear
-"
-function! searchx#clear() abort
-  call s:clear()
-endfunction
-
-"
 " s:goto
 "
 function! s:goto(dir) abort
@@ -93,11 +68,8 @@ function! s:goto(dir) abort
   let l:pos = searchpos(getreg('/'), a:dir)
   if l:pos[0] != 0
     call cursor(l:pos[0], l:pos[1])
-    let s:state.current_curpos = l:pos
-    call s:clear()
-    let s:state.matches = s:find_matches(getreg('/'))
+    let s:state.matches = s:find_matches(getreg('/'), l:pos)
     call s:refresh({ 'marker': mode(1) ==# 'c', 'incsearch': mode(1) ==# 'c' })
-    redraw
   endif
 endfunction
 
@@ -111,13 +83,14 @@ function! s:on_input() abort
       return
     endif
 
+    " Check marker.
     if strlen(l:input) > 0
       let l:index = index(g:searchx.markers, l:input[strlen(l:input) - 1])
       if l:index >= 0
         for l:match in s:state.matches.matches
           if l:match.marker ==# g:searchx.markers[l:index]
-            let s:auto_accept = v:true
             call cursor(l:match.lnum, l:match.col)
+            let s:state.accept_reason = s:AcceptReason.Marker
             call feedkeys("\<CR>", 'n')
             return
           endif
@@ -125,11 +98,12 @@ function! s:on_input() abort
       endif
     endif
 
+    " Update view state.
     call setreg('/', l:input)
-    call s:clear()
-    let s:state.current_curpos = deepcopy(s:state.execute_curpos)
-    let s:state.matches = s:find_matches(getreg('/'))
+    let s:state.matches = s:find_matches(getreg('/'), s:state.execute_curpos)
+    call s:refresh({ 'marker': v:true })
 
+    " Search for out-of-window match via native `searchpos`.
     if empty(s:state.matches.matches) && s:state.matches.current is v:null
       if s:state.is_next
         call searchx#next()
@@ -137,13 +111,11 @@ function! s:on_input() abort
         call searchx#prev()
       endif
     else
+      " Move to current match.
       if s:state.matches.current isnot v:null
         call cursor(s:state.matches.current.lnum, s:state.matches.current.col)
-        let s:state.current_curpos = [s:state.matches.current.lnum, s:state.matches.current.col]
       endif
-      call s:refresh({ 'marker': v:true })
     endif
-    redraw
   catch /.*/
     echomsg string({ 'exception': v:exception, 'throwpoint': v:throwpoint })
   endtry
@@ -153,33 +125,35 @@ endfunction
 " refresh
 "
 function s:refresh(...) abort
-  let v:hlsearch = v:true
+  call s:clear()
+
   let l:option = get(a:000, 0, {})
   for l:match in s:state.matches.matches
     if s:state.matches.current is l:match && get(l:option, 'incsearch', v:true)
-      call searchx#highlight#incsearch(l:match)
+      call searchx#highlight#set_incsearch(l:match)
     else
       if get(l:option, 'marker', v:true)
-        call searchx#highlight#marker(l:match)
+        call searchx#highlight#set_marker(l:match)
       endif
     endif
   endfor
+  let v:hlsearch = v:true
+
+  redraw
 endfunction
 
 "
 " clear
 "
 function s:clear() abort
-  for l:match in s:state.matches.matches
-    call searchx#highlight#remove(l:match)
-  endfor
+  call searchx#highlight#clear()
   let v:hlsearch = v:false
 endfunction
 
 "
 " find_matches
 "
-function! s:find_matches(input) abort
+function! s:find_matches(input, curpos) abort
   let l:lnum_s = line('w0')
   let l:lnum_e = line('w$')
   let l:texts = getbufline('%', l:lnum_s, l:lnum_e)
@@ -194,6 +168,7 @@ function! s:find_matches(input) abort
       if l:m[0] ==# ''
         break
       endif
+
       let l:match = {
       \   'id': len(l:matches) + 1,
       \   'lnum': l:lnum_s + l:i,
@@ -201,11 +176,10 @@ function! s:find_matches(input) abort
       \   'end_col': l:m[2] + 1,
       \   'marker': get(g:searchx.markers, len(l:matches), v:null),
       \ }
-
-      if empty(l:next) && (s:state.current_curpos[0] < l:match.lnum || s:state.current_curpos[0] == l:match.lnum && s:state.current_curpos[1] <= l:match.col)
+      if empty(l:next) && (a:curpos[0] < l:match.lnum || a:curpos[0] == l:match.lnum && a:curpos[1] <= l:match.col)
         let l:next = l:match
       endif
-      if s:state.current_curpos[0] > l:match.lnum || s:state.current_curpos[0] == l:match.lnum && s:state.current_curpos[1] >= l:match.col
+      if a:curpos[0] > l:match.lnum || a:curpos[0] == l:match.lnum && a:curpos[1] >= l:match.col
         let l:prev = l:match
       endif
       call add(l:matches, l:match)

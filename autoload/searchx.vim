@@ -7,17 +7,21 @@ let s:Direction.Prev = 0
 let s:Direction.Next = 1
 
 let s:state = {}
-let s:state.timer = -1
 let s:state.direction = s:Direction.Next
 let s:state.firstview = v:null
 let s:state.matches = { 'matches': [], 'current': v:null }
 let s:state.accept_reason = s:AcceptReason.Marker
 
+let s:paused = v:false
+
 "
 " searchx#run
 "
 function! searchx#run(...) abort
-  let s:state.timer = timer_start(100, { -> s:on_input() }, { 'repeat': -1 })
+  augroup searchx-run
+    autocmd!
+    autocmd CmdlineChanged * call s:on_input()
+  augroup END
   let s:state.direction = get(a:000, 0, s:detect_direction())
   let s:state.firstview = winsaveview()
   let s:state.accept_reason = s:AcceptReason.Return
@@ -27,7 +31,10 @@ function! searchx#run(...) abort
   catch /.*/
     echomsg string({ 'exception': v:exception, 'throwpoint': v:throwpoint })
   finally
-    call timer_stop(s:state.timer)
+    augroup searchx-run
+      autocmd!
+    augroup END
+
     call s:clear()
 
     if l:return ==# ''
@@ -89,10 +96,22 @@ function! s:goto(dir) abort
   endif
 endfunction
 
+function! searchx#_pause() abort
+  let s:paused = v:true
+endfunction
+
+function! searchx#_resume() abort
+  let s:paused = v:false
+  call s:on_input()
+endfunction
+
 "
 " on_input
 "
 function! s:on_input() abort
+  if s:paused
+    return
+  endif
   try
     let l:input = g:searchx.convert(getcmdline())
     if getreg('/') ==# l:input
@@ -119,6 +138,12 @@ function! s:on_input() abort
       call winrestview(s:state.firstview)
     endif
     let s:state.matches = s:find_matches(l:input, [s:state.firstview.lnum, s:state.firstview.col])
+    if len(s:state.matches.matches) == 0 && strlen(getreg('/')) < strlen(l:input)
+      let l:input = getreg('/') .. '.\{-}' .. strpart(l:input, strlen(getreg('/')))
+      let s:state.matches = s:find_matches(l:input, [s:state.firstview.lnum, s:state.firstview.col])
+      call searchx#_pause()
+      call feedkeys("\<C-u>" .. l:input .. "\<Cmd>call searchx#_resume()\<CR>", 'n')
+    endif
     call setreg('/', l:input)
     call s:refresh({ 'marker': v:true })
 

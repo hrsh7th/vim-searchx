@@ -22,6 +22,7 @@ function! searchx#run(...) abort
     autocmd!
     autocmd CmdlineChanged * call s:on_input()
   augroup END
+
   let s:state.direction = get(a:000, 0, s:detect_direction())
   let s:state.firstview = winsaveview()
   let s:state.accept_reason = s:AcceptReason.Return
@@ -37,11 +38,13 @@ function! searchx#run(...) abort
 
     call s:clear()
 
+    call s:markpos([s:state.firstview.lnum, s:state.firstview.col])
+
     if l:return ==# ''
       if !empty(s:state.firstview)
         call winrestview(s:state.firstview)
       endif
-    elseif s:state.accept_reason == s:AcceptReason.Marker
+    elseif index([s:AcceptReason.Marker], s:state.accept_reason) >= 0
       call feedkeys("\<Cmd>let v:hlsearch = v:false\<CR>", 'n')
     else
       call feedkeys("\<Cmd>let v:hlsearch = v:true\<CR>", 'n')
@@ -81,6 +84,16 @@ function! s:detect_direction() abort
 endfunction
 
 "
+" s:markpos
+"
+function! s:markpos(pos) abort
+  let l:curpos = getcurpos()[1:2]
+  call cursor(a:pos[0], a:pos[1])
+  normal! m`
+  call cursor(l:curpos[0], l:curpos[1])
+endfunction
+
+"
 " s:goto
 "
 function! s:goto(dir) abort
@@ -92,7 +105,11 @@ function! s:goto(dir) abort
   if l:pos[0] != 0
     call cursor(l:pos[0], l:pos[1])
     let s:state.matches = s:find_matches(getreg('/'), l:pos)
-    call s:refresh({ 'marker': mode(1) ==# 'c', 'incsearch': mode(1) ==# 'c' })
+    let l:is_cmdline = mode(1) ==# 'c'
+    call s:refresh({ 'marker': l:is_cmdline, 'incsearch': l:is_cmdline })
+    if !l:is_cmdline
+      call feedkeys("\<Cmd>let v:hlsearch = v:true\<CR>", 'n')
+    endif
   endif
 endfunction
 
@@ -138,14 +155,6 @@ function! s:on_input() abort
       call winrestview(s:state.firstview)
     endif
     let s:state.matches = s:find_matches(l:input, [s:state.firstview.lnum, s:state.firstview.col])
-    if g:searchx.fuzzy
-      if len(s:state.matches.matches) == 0 && strlen(getreg('/')) < strlen(l:input)
-        let l:input = getreg('/') .. '.\{-}' .. strpart(l:input, strlen(getreg('/')))
-        let s:state.matches = s:find_matches(l:input, [s:state.firstview.lnum, s:state.firstview.col])
-        call searchx#_pause()
-        call feedkeys("\<C-u>" .. l:input .. "\<Cmd>call searchx#_resume()\<CR>", 'n')
-      endif
-    endif
     call setreg('/', l:input)
     call s:refresh({ 'marker': v:true })
 
@@ -214,7 +223,7 @@ function! s:find_matches(input, curpos) abort
       if l:m[0] ==# ''
         break
       endif
-
+      
       let l:match = {
       \   'id': len(l:matches) + 1,
       \   'lnum': l:lnum_s + l:i,

@@ -15,11 +15,6 @@ cnoremap <C-k> <Cmd>call searchx#prev()<CR>
 let g:searchx = {}
 
 "
-" You can disable or enable fuzzy matching fallback.
-"
-let g:searchx.fuzzy = v:true
-
-"
 " You can customize regex pattern via `g:searchx.convert`.
 "
 function g:searchx.convert(input) abort
@@ -31,6 +26,11 @@ function g:searchx.convert(input) abort
   " / as word-end identifier.
   if l:input[strlen(l:input) - 1] ==# '/'
     let l:input = l:input[0 : strlen(l:input) - 2] .. '\k*\zs.'
+  endif
+
+  " symbol only input as literal pattern.
+  if l:input !~# '\k'
+    let l:input = '\V' .. l:input
   endif
 
   return l:input

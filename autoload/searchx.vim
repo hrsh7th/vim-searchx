@@ -137,7 +137,7 @@ function s:refresh(...) abort
       endif
     endif
   endfor
-  let v:hlsearch = v:true
+  let v:hlsearch = len(s:state.matches.matches) > 0
 
   redraw
 endfunction
@@ -165,7 +165,7 @@ function! s:find_matches(input, curpos) abort
     let l:off = 0
     while l:off < strlen(l:text)
       let l:m = matchstrpos(l:text, a:input, l:off, 1)
-      if l:m[0] ==# ''
+      if l:m[0] ==# '' || (l:m[2] - l:m[1]) >= strlen(l:text)
         break
       endif
 

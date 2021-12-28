@@ -33,10 +33,11 @@ endfunction
 ```
 
 
-### similar plugins
+### Similar plugins
 
 - [vim-seak](https://github.com/hrsh7th/vim-seak)
 - [vim-foolish-move](https://github.com/hrsh7th/vim-foolish-move)
 - [vim-feeling-move](https://github.com/hrsh7th/vim-feeling-move)
 - [vim-aim](https://github.com/hrsh7th/vim-aim)
-- [vim-insert-point](https://github.com/hrsh7th/vim-aim)
+- [vim-insert-point](https://github.com/hrsh7th/vim-insert-point)
+

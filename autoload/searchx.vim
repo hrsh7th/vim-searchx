@@ -166,6 +166,7 @@ function s:refresh(...) abort
   for l:match in s:state.matches.matches
     if s:state.matches.current is l:match && get(l:option, 'incsearch', v:true)
       call searchx#highlight#set_incsearch(l:match)
+      call searchx#highlight#set_marker(l:match)
     else
       if get(l:option, 'marker', v:true)
         call searchx#highlight#set_marker(l:match)

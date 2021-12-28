@@ -2,9 +2,13 @@ let s:AcceptReason = {}
 let s:AcceptReason.Marker = 1
 let s:AcceptReason.Return = 2
 
+let s:Direction = {}
+let s:Direction.Prev = 0
+let s:Direction.Next = 1
+
 let s:state = {}
 let s:state.timer = -1
-let s:state.is_next = v:true
+let s:state.direction = s:Direction.Next
 let s:state.execute_curpos = [-1, -1]
 let s:state.matches = { 'matches': [], 'current': v:null }
 let s:state.accept_reason = s:AcceptReason.Marker
@@ -14,7 +18,7 @@ let s:state.accept_reason = s:AcceptReason.Marker
 "
 function! searchx#run(...) abort
   let s:state.timer = timer_start(100, { -> s:on_input() }, { 'repeat': -1 })
-  let s:state.is_next = get(a:000, 0, 1) == 1
+  let s:state.direction = get(a:000, 0, s:detect_direction())
   let s:state.execute_curpos = getcurpos()[1:2]
   let s:state.accept_reason = s:AcceptReason.Return
   let v:hlsearch = v:true
@@ -55,6 +59,16 @@ endfunction
 "
 function searchx#prev() abort
   call s:goto('bn')
+endfunction
+
+"
+" s:detect_direction
+"
+function! s:detect_direction() abort
+  let l:curpos = getcurpos()[1:2]
+  let l:above = l:curpos[0] - line('w0')
+  let l:below = line('w$') - l:curpos[0]
+  return l:above > l:below ? s:Direction.Prev : s:Direction.Next
 endfunction
 
 "
@@ -105,7 +119,7 @@ function! s:on_input() abort
 
     " Search for out-of-window match via native `searchpos`.
     if empty(s:state.matches.matches) && s:state.matches.current is v:null
-      if s:state.is_next
+      if s:state.direction == s:Direction.Next
         call searchx#next()
       else
         call searchx#prev()
@@ -188,7 +202,7 @@ function! s:find_matches(input, curpos) abort
   endfor
   let l:next = empty(l:next) ? l:prev : l:next
   let l:prev = empty(l:prev) ? l:next : l:prev
-  let l:current = s:state.is_next ? l:next : l:prev
+  let l:current = s:state.direction == s:Direction.Next ? l:next : l:prev
   return { 'matches': l:matches, 'current': l:current }
 endfunction
 

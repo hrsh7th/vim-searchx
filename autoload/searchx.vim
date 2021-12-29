@@ -106,8 +106,11 @@ function! s:goto(pos) abort
   call cursor(a:pos[0], a:pos[1])
   let s:state.matches = s:find_matches(@/, a:pos)
   let l:is_cmdline = mode(1) ==# 'c'
-  call s:refresh({ 'marker': l:is_cmdline, 'incsearch': l:is_cmdline })
-  if !l:is_cmdline
+  if l:is_cmdline
+    call s:refresh({ 'marker': v:true, 'incsearch': v:true })
+  else
+    call s:refresh({ 'marker': v:false, 'incsearch': v:true })
+    call searchx#timer#start('incsearch', 500, { -> s:refresh({ 'marker': v:false, 'incsearch': v:false }) })
     call feedkeys("\<Cmd>let v:hlsearch = v:true\<CR>", 'n')
   endif
 endfunction

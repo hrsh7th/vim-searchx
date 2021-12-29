@@ -10,13 +10,13 @@ nnoremap ? <Cmd>call searchx#run(0)<CR>
 xnoremap / <Cmd>call searchx#run(1)<CR>
 xnoremap ? <Cmd>call searchx#run(0)<CR>
 
-nnoremap n <Cmd>call searchx#next()<CR>
-nnoremap N <Cmd>call searchx#prev()<CR>
-xnoremap n <Cmd>call searchx#next()<CR>
-xnoremap N <Cmd>call searchx#prev()<CR>
+nnoremap n <Cmd>call searchx#search_next()<CR>
+nnoremap N <Cmd>call searchx#search_prev()<CR>
+xnoremap n <Cmd>call searchx#search_next()<CR>
+xnoremap N <Cmd>call searchx#search_prev()<CR>
 
-cnoremap <C-j> <Cmd>call searchx#next()<CR>
-cnoremap <C-k> <Cmd>call searchx#prev()<CR>
+cnoremap <C-j> <Cmd>call searchx#search_next()<CR>
+cnoremap <C-k> <Cmd>call searchx#search_prev()<CR>
 
 let g:searchx = {}
 

@@ -18,6 +18,8 @@ xnoremap N <Cmd>call searchx#search_prev()<CR>
 cnoremap <C-j> <Cmd>call searchx#search_next()<CR>
 cnoremap <C-k> <Cmd>call searchx#search_prev()<CR>
 
+nnoremap <C-l> <Cmd>call searchx#clear()<CR>
+
 let g:searchx = {}
 
 "

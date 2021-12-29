@@ -19,6 +19,7 @@ function! searchx#run(...) abort
   let s:state.direction = get(a:000, 0, s:detect_direction())
   let s:state.firstview = winsaveview()
   let s:state.accept_reason = s:AcceptReason.Return
+  let @/ = ''
   let v:hlsearch = v:true
 
   augroup searchx-run
@@ -88,11 +89,11 @@ endfunction
 " s:search
 "
 function! s:search(dir) abort
-  if getreg('/') ==# ''
+  if @/ ==# ''
     return
   endif
 
-  let l:pos = searchpos(getreg('/'), a:dir)
+  let l:pos = searchpos(@/, a:dir)
   if l:pos[0] != 0
     call s:goto(l:pos)
   endif
@@ -103,7 +104,7 @@ endfunction
 "
 function! s:goto(pos) abort
   call cursor(a:pos[0], a:pos[1])
-  let s:state.matches = s:find_matches(getreg('/'), a:pos)
+  let s:state.matches = s:find_matches(@/, a:pos)
   let l:is_cmdline = mode(1) ==# 'c'
   call s:refresh({ 'marker': l:is_cmdline, 'incsearch': l:is_cmdline })
   if !l:is_cmdline
@@ -118,7 +119,7 @@ endfunction
 function! s:on_input() abort
   try
     let l:input = g:searchx.convert(getcmdline())
-    if getreg('/') ==# l:input
+    if @/ ==# l:input
       return
     endif
 
@@ -137,20 +138,22 @@ function! s:on_input() abort
       endif
     endif
 
-    " Update view state.
-    if strlen(getreg('/')) > strlen(l:input)
+    " Check backspace.
+    if  strlen(l:input) < strlen(@/)
       call winrestview(s:state.firstview)
     endif
-    let s:state.matches = s:find_matches(l:input, [s:state.firstview.lnum, s:state.firstview.col + 1])
-    call setreg('/', l:input)
+    let @/ = l:input
+
+    " Update view state.
+    let s:state.matches = s:find_matches(@/, [s:state.firstview.lnum, s:state.firstview.col + 1])
     call s:refresh({ 'marker': v:true })
 
     " Search for out-of-window match via native `searchpos`.
     if empty(s:state.matches.matches) && s:state.matches.current is v:null
       if s:state.direction == s:Direction.Next
-        call searchx#next()
+        call searchx#search_next()
       else
-        call searchx#prev()
+        call searchx#search_prev()
       endif
     else
       " Move to current match.
@@ -171,11 +174,16 @@ function s:refresh(...) abort
 
   let l:option = get(a:000, 0, {})
   for l:match in s:state.matches.matches
-    if s:state.matches.current is l:match && get(l:option, 'incsearch', v:true)
-      call searchx#highlight#set_incsearch(l:match)
-      call searchx#highlight#set_marker(extend({ 'marker': '!' }, l:match, 'keep'))
-    else
-      if get(l:option, 'marker', v:true)
+    if get(l:option, 'incsearch', v:true)
+      if s:state.matches.current is l:match
+        call searchx#highlight#set_incsearch(l:match)
+      endif
+    endif
+
+    if get(l:option, 'marker', v:true)
+      if s:state.matches.current is l:match
+        call searchx#highlight#set_marker(extend({ 'marker': '!' }, l:match, 'keep'))
+      else
         call searchx#highlight#set_marker(l:match)
       endif
     endif
@@ -190,7 +198,6 @@ endfunction
 "
 function s:clear() abort
   call searchx#highlight#clear()
-  let v:hlsearch = v:false
 endfunction
 
 "

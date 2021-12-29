@@ -8,7 +8,7 @@ let s:Direction.Next = 1
 
 let s:state = {}
 let s:state.direction = s:Direction.Next
-let s:state.firstview = v:null
+let s:state.firstview = winsaveview()
 let s:state.matches = { 'matches': [], 'current': v:null }
 let s:state.accept_reason = s:AcceptReason.Marker
 
@@ -50,17 +50,17 @@ function! searchx#clear() abort
 endfunction
 
 "
-" searchx#next
+" searchx#search_next
 "
-function searchx#next() abort
-  call s:goto('zn')
+function searchx#search_next() abort
+  call s:search('zn')
 endfunction
 
 "
-" searchx#prev
+" searchx#search_prev
 "
-function searchx#prev() abort
-  call s:goto('bn')
+function searchx#search_prev() abort
+  call s:search('bn')
 endfunction
 
 "
@@ -81,26 +81,33 @@ function! s:markpos(firstview) abort
   call winrestview(a:firstview)
   normal! m`
   call winrestview(l:finalview)
-  call cursor(l:finalview.lnum, l:finalview.col)
+  call cursor(l:finalview.lnum, l:finalview.col + 1)
 endfunction
 
 "
-" s:goto
+" s:search
 "
-function! s:goto(dir) abort
+function! s:search(dir) abort
   if getreg('/') ==# ''
     return
   endif
 
   let l:pos = searchpos(getreg('/'), a:dir)
   if l:pos[0] != 0
-    call cursor(l:pos[0], l:pos[1])
-    let s:state.matches = s:find_matches(getreg('/'), l:pos)
-    let l:is_cmdline = mode(1) ==# 'c'
-    call s:refresh({ 'marker': l:is_cmdline, 'incsearch': l:is_cmdline })
-    if !l:is_cmdline
-      call feedkeys("\<Cmd>let v:hlsearch = v:true\<CR>", 'n')
-    endif
+    call s:goto(l:pos)
+  endif
+endfunction
+
+"
+" s:goto
+"
+function! s:goto(pos) abort
+  call cursor(a:pos[0], a:pos[1])
+  let s:state.matches = s:find_matches(getreg('/'), a:pos)
+  let l:is_cmdline = mode(1) ==# 'c'
+  call s:refresh({ 'marker': l:is_cmdline, 'incsearch': l:is_cmdline })
+  if !l:is_cmdline
+    call feedkeys("\<Cmd>let v:hlsearch = v:true\<CR>", 'n')
   endif
 endfunction
 
@@ -134,7 +141,7 @@ function! s:on_input() abort
     if strlen(getreg('/')) > strlen(l:input)
       call winrestview(s:state.firstview)
     endif
-    let s:state.matches = s:find_matches(l:input, [s:state.firstview.lnum, s:state.firstview.col])
+    let s:state.matches = s:find_matches(l:input, [s:state.firstview.lnum, s:state.firstview.col + 1])
     call setreg('/', l:input)
     call s:refresh({ 'marker': v:true })
 

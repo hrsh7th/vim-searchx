@@ -1,0 +1,96 @@
+*vim-searchx* *searchx*
+
+A plugin that provides extended search motion.
+
+==============================================================================
+CONTENTS                                                      *searchx-contents*
+
+Usage                                                            |searchx-usage|
+Function                                                      |searchx-function|
+Variable                                                      |searchx-variable|
+Highlight                                                    |searchx-highlight|
+
+
+
+==============================================================================
+Usage                                                            *searchx-usage*
+
+>
+  " Overwrite / and ?.
+  nnoremap ? <Cmd>call searchx#run(0)<CR>
+  nnoremap / <Cmd>call searchx#run(1)<CR>
+  xnoremap ? <Cmd>call searchx#run(0)<CR>
+  xnoremap / <Cmd>call searchx#run(1)<CR>
+
+  " Move to next/prev match.
+  nnoremap N <Cmd>call searchx#search_prev()<CR>
+  nnoremap n <Cmd>call searchx#search_next()<CR>
+  xnoremap N <Cmd>call searchx#search_prev()<CR>
+  xnoremap n <Cmd>call searchx#search_next()<CR>
+  cnoremap <C-k> <Cmd>call searchx#search_prev()<CR>
+  cnoremap <C-j> <Cmd>call searchx#search_next()<CR>
+
+  " Clear highlights
+  nnoremap <C-l> <Cmd>call searchx#clear()<CR>
+<
+
+==============================================================================
+Function                                                      *searchx-function*
+
+                                                                 *searchx#run()*
+searchx#run(direction)~
+
+  Start / or ? like command.
+
+  The `direction` can be the following values.
+    - 0: prev (?)
+    - 1: next (/)
+
+                                                         *searchx#search_next()*
+searchx#search_next()~
+
+  Move to next match.
+
+                                                         *searchx#search_prev()*
+searchx#search_prev()~
+
+  Move to prev match.
+
+                                                               *searchx#clear()*
+searchx#clear()~
+
+  Clear all highlights.
+
+
+
+==============================================================================
+Variable                                                      *searchx-variable*
+
+                                                             *g:searchx.markers*
+g:serachx.markers~
+
+  The array of characters for markers.
+
+                                                             *g:searchx.convert*
+g:searchx.convert~
+
+  The function to convert input to search pattern.
+
+
+
+==============================================================================
+Highlight                                                    *searchx-highlight*
+
+SearchxIncSearch~
+
+  The incsearch hilights.
+
+SearchxMarker~
+
+  The marker highlights.
+
+
+
+==============================================================================
+ vim:tw=78:ts=4:et:ft=help:norl:
+

@@ -62,7 +62,9 @@ endfunction
 function searchx#search_next() abort
   let l:view = winsaveview()
   call s:goto_next()
-  call s:markpos(l:view)
+  if mode() != 'c'
+    call s:markpos(l:view)
+  endif
 endfunction
 
 "
@@ -71,7 +73,9 @@ endfunction
 function searchx#search_prev() abort
   let l:view = winsaveview()
   call s:goto_prev()
-  call s:markpos(l:view)
+  if mode() != 'c'
+    call s:markpos(l:view)
+  endif
 endfunction
 
 "

@@ -38,19 +38,20 @@ function! searchx#run(...) abort
 
   " finalize. 
   call s:clear()
+  redraw
   if l:return ==# ''
     call winrestview(s:state.firstview)
     doautocmd <nomodeline> User SearchxCancel
   else
     call searchx#cursor#mark()
-    if index([s:AcceptReason.Marker], s:state.accept_reason) >= 0
-      call feedkeys("\<Cmd>let v:hlsearch = v:false\<CR>", 'n')
-      doautocmd <nomodeline> User SearchxAcceptMarker
-    else
-      call feedkeys("\<Cmd>let v:hlsearch = v:true\<CR>", 'n')
-      doautocmd <nomodeline> User SearchxAcceptReturn
-    endif
     doautocmd <nomodeline> User SearchxAccept
+    if index([s:AcceptReason.Marker], s:state.accept_reason) >= 0
+      doautocmd <nomodeline> User SearchxAcceptMarker
+      call feedkeys("\<Cmd>let v:hlsearch = v:false\<CR>", 'n')
+    else
+      doautocmd <nomodeline> User SearchxAcceptReturn
+      call feedkeys("\<Cmd>let v:hlsearch = v:true\<CR>", 'n')
+    endif
   endif
 endfunction
 

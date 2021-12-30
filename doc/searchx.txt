@@ -39,6 +39,7 @@ Usage                                                            *searchx-usage*
   nnoremap <C-l> <Cmd>call searchx#clear()<CR>
 <
 
+
 ==============================================================================
 Function                                                      *searchx-function*
 

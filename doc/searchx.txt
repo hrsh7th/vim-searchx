@@ -89,6 +89,9 @@ SearchxMarker~
 
   The marker highlights.
 
+SearchxMakerCurrent~
+
+  The current maker highlights.
 
 
 ==============================================================================

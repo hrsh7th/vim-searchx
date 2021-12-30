@@ -1,16 +1,46 @@
+let s:incsearch_id = 0
+
+"
+" set_incsearch
+"
+function! searchx#highlight#set_incsearch(match) abort
+  let s:incsearch_id = matchaddpos('SearchxIncSearch', [[a:match.lnum, a:match.col, a:match.end_col - a:match.col]])
+endfunction
+
+"
+" add_marker
+"
+function! searchx#highlight#add_marker(match) abort
+  call s:add_marker(a:match)
+endfunction
+
+"
+" clear
+"
+function! searchx#highlight#clear() abort
+  try
+    silent! call matchdelete(s:incsearch_id)
+  catch /.*/
+  endtry
+  call s:clear_marker()
+endfunction
+
+"
+" add_marker/clear_marker
+"
 if has('nvim')
   let s:marker_ns  = nvim_create_namespace('searchx:marker')
 
   "
-  " set_marker
+  " add_marker
   "
-  function! s:set_marker(match) abort
+  function! s:add_marker(match) abort
     if !empty(a:match.marker)
       call nvim_buf_set_extmark(0, s:marker_ns, a:match.lnum - 1, max([0, a:match.col - 2]), {
       \   'id': a:match.id,
       \   'end_line': a:match.lnum - 1,
       \   'end_col': max([0, a:match.col - 2]),
-      \   'virt_text': [[a:match.marker, 'SearchxMarker']],
+      \   'virt_text': [[a:match.marker, (a:match.current ? 'SearchxMarkerCurrent' : 'SearchxMarker')]],
       \   'virt_text_pos': 'overlay',
       \   'priority': 1000,
       \ })
@@ -28,9 +58,9 @@ else
   call prop_type_add('searchx_marker', {})
 
   "
-  " set_marker
+  " add_marker
   "
-  function! s:set_marker(match) abort
+  function! s:add_marker(match) abort
     if !empty(a:match.marker)
       call prop_add(a:match.lnum, a:match.col, {
       \   'type': 'searchx_marker',
@@ -55,32 +85,4 @@ else
     call prop_remove({ 'type': 'searchx_marker' })
   endfunction
 endif
-
-
-let s:incsearch_id = 0
-
-"
-" set_incsearch
-"
-function! searchx#highlight#set_incsearch(match) abort
-  let s:incsearch_id = matchaddpos('SearchxIncSearch', [[a:match.lnum, a:match.col, a:match.end_col - a:match.col]])
-endfunction
-
-"
-" set_marker
-"
-function! searchx#highlight#set_marker(match) abort
-  call s:set_marker(a:match)
-endfunction
-
-"
-" clear
-"
-function! searchx#highlight#clear() abort
-  try
-    silent! call matchdelete(s:incsearch_id)
-  catch /.*/
-  endtry
-  call s:clear_marker()
-endfunction
 

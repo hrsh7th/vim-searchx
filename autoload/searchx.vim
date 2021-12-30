@@ -30,8 +30,8 @@ function! searchx#run(...) abort
   augroup searchx-run
     autocmd!
   augroup END
-
   call s:clear()
+
   if l:return ==# ''
     return winrestview(s:state.firstview)
   elseif index([s:AcceptReason.Marker], s:state.accept_reason) >= 0
@@ -54,14 +54,69 @@ endfunction
 " searchx#search_next
 "
 function searchx#search_next() abort
-  call s:search('zn')
+  let l:view = winsaveview()
+  call s:goto_next()
+  call s:markpos(l:view)
 endfunction
 
 "
 " searchx#search_prev
 "
 function searchx#search_prev() abort
-  call s:search('bn')
+  let l:view = winsaveview()
+  call s:goto_prev()
+  call s:markpos(l:view)
+endfunction
+
+"
+" s:search
+"
+function! s:goto_next() abort
+  let l:pos = s:search('zn')
+  if !empty(l:pos)
+    call s:goto(l:pos)
+  endif
+endfunction
+
+"
+" s:search_prev
+"
+function! s:goto_prev() abort
+  let l:pos = s:search('bn')
+  if !empty(l:pos)
+    call s:goto(l:pos)
+  endif
+endfunction
+
+"
+" s:goto
+"
+function! s:goto(pos) abort
+  call cursor(a:pos[0], a:pos[1])
+  let s:state.matches = s:find_matches(@/, a:pos)
+  if mode(1) ==# 'c'
+    call s:refresh({ 'marker': v:true, 'incsearch': v:true })
+  else
+    call searchx#async#step([
+    \   { next -> [s:refresh({ 'marker': v:false, 'incsearch': v:true }), searchx#async#timeout('goto', 500, next)] },
+    \   { next -> [s:refresh({ 'marker': v:false, 'incsearch': v:false }), next()] },
+    \   { next -> [feedkeys("\<Cmd>let v:hlsearch = v:true\<CR>", 'n'), next()] },
+    \ ])
+  endif
+endfunction
+
+"
+" s:search
+"
+function! s:search(expr) abort
+  if @/ ==# ''
+    return v:null
+  endif
+  let l:pos = searchpos(@/, a:expr)
+  if l:pos[0] != 0
+    return l:pos
+  endif
+  return v:null
 endfunction
 
 "
@@ -83,36 +138,6 @@ function! s:markpos(firstview) abort
   normal! m`
   call winrestview(l:finalview)
   call cursor(l:finalview.lnum, l:finalview.col + 1)
-endfunction
-
-"
-" s:search
-"
-function! s:search(dir) abort
-  if @/ ==# ''
-    return
-  endif
-
-  let l:pos = searchpos(@/, a:dir)
-  if l:pos[0] != 0
-    call s:goto(l:pos)
-  endif
-endfunction
-
-"
-" s:goto
-"
-function! s:goto(pos) abort
-  call cursor(a:pos[0], a:pos[1])
-  let s:state.matches = s:find_matches(@/, a:pos)
-  let l:is_cmdline = mode(1) ==# 'c'
-  if l:is_cmdline
-    call s:refresh({ 'marker': v:true, 'incsearch': v:true })
-  else
-    call s:refresh({ 'marker': v:false, 'incsearch': v:true })
-    call searchx#timer#start('incsearch', 500, { -> s:refresh({ 'marker': v:false, 'incsearch': v:false }) })
-    call feedkeys("\<Cmd>let v:hlsearch = v:true\<CR>", 'n')
-  endif
 endfunction
 
 
@@ -142,9 +167,11 @@ function! s:on_input() abort
     endif
 
     " Check backspace.
-    if  strlen(l:input) < strlen(@/)
+    if strlen(l:input) < strlen(@/)
       call winrestview(s:state.firstview)
     endif
+
+    " Update search pattern.
     let @/ = l:input
 
     " Update view state.
@@ -154,9 +181,9 @@ function! s:on_input() abort
     " Search for out-of-window match via native `searchpos`.
     if empty(s:state.matches.matches) && s:state.matches.current is v:null
       if s:state.direction == s:Direction.Next
-        call searchx#search_next()
+        call s:search_next()
       else
-        call searchx#search_prev()
+        call s:search_prev()
       endif
     else
       " Move to current match.
@@ -178,17 +205,13 @@ function s:refresh(...) abort
   let l:option = get(a:000, 0, {})
   for l:match in s:state.matches.matches
     if get(l:option, 'incsearch', v:true)
-      if s:state.matches.current is l:match
+      if l:match.current
         call searchx#highlight#set_incsearch(l:match)
       endif
     endif
 
     if get(l:option, 'marker', v:true)
-      if s:state.matches.current is l:match
-        call searchx#highlight#set_marker(extend({ 'marker': '!' }, l:match, 'keep'))
-      else
-        call searchx#highlight#set_marker(l:match)
-      endif
+      call searchx#highlight#add_marker(l:match)
     endif
   endfor
   let v:hlsearch = len(s:state.matches.matches) > 0
@@ -201,6 +224,7 @@ endfunction
 "
 function s:clear() abort
   call searchx#highlight#clear()
+  let v:hlsearch = v:false
 endfunction
 
 "
@@ -215,6 +239,7 @@ function! s:find_matches(input, curpos) abort
   let l:matches = []
   for l:i in range(0, len(l:texts) - 1)
     let l:text = l:texts[l:i]
+
     let l:off = 0
     while l:off < strlen(l:text)
       let l:m = matchstrpos(l:text, a:input, l:off, 1)
@@ -228,6 +253,7 @@ function! s:find_matches(input, curpos) abort
       \   'col': l:m[1] + 1,
       \   'end_col': l:m[2] + 1,
       \   'marker': get(g:searchx.markers, len(l:matches), v:null),
+      \   'current': v:false,
       \ }
       if empty(l:next) && (a:curpos[0] < l:match.lnum || a:curpos[0] == l:match.lnum && a:curpos[1] <= l:match.col)
         let l:next = l:match
@@ -239,9 +265,17 @@ function! s:find_matches(input, curpos) abort
       let l:off = l:match.end_col
     endwhile
   endfor
+
   let l:next = empty(l:next) ? l:prev : l:next
   let l:prev = empty(l:prev) ? l:next : l:prev
   let l:current = s:state.direction == s:Direction.Next ? l:next : l:prev
+  for l:match in l:matches
+    if l:match is l:current
+      let l:match.current = v:true
+      break
+    endif
+  endfor
+
   return { 'matches': l:matches, 'current': l:current }
 endfunction
 

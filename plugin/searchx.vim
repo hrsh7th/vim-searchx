@@ -15,3 +15,7 @@ if !hlexists('SearchxMarker')
   highlight default link SearchxMarker DiffAdd
 endif
 
+if !hlexists('SearchxMarkerCurrent')
+  highlight default link SearchxMarkerCurrent DiffText
+endif
+

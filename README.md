@@ -33,7 +33,8 @@ function g:searchx.convert(input) abort
   if a:input !~# '\k'
     return '\V' .. a:input
   endif
-  return '\<' .. join(split(a:input, ' '), '.\{-}')
+  let l:sep = a:input[0] =~# '[[:alnum:]]' ? '[^[:alnum:]]\zs' : '[[:alnum:]]\zs'
+  return l:sep .. join(split(a:input, ' '), '.\{-}')
 endfunction
 ```
 

@@ -38,7 +38,7 @@ Usage                                                            *searchx-usage*
 Function                                                      *searchx-function*
 
                                                                  *searchx#run()*
-searchx#run(direction)~
+searchx#run([direction])~
 
   Start / or ? like command.
 

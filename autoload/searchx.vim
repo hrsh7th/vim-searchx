@@ -154,9 +154,9 @@ function! s:on_input() abort
     " Search for out-of-window match via native `searchpos`.
     if empty(s:state.matches.matches) && s:state.matches.current is v:null
       if s:state.direction == s:Direction.Next
-        call s:goto_next()
+        call searchx#search_next()
       else
-        call s:goto_prev()
+        call searchx#search_prev()
       endif
     else
       " Move to current match.

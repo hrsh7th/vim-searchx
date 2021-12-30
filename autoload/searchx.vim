@@ -20,6 +20,7 @@ function! searchx#run(...) abort
   let s:state.direction = get(a:000, 0, s:detect_direction())
   let s:state.firstview = winsaveview()
   let s:state.accept_reason = s:AcceptReason.Return
+  call searchx#cursor#set_firstview(s:state.firstview)
   let @/ = ''
   let v:hlsearch = v:true
 
@@ -42,11 +43,9 @@ function! searchx#run(...) abort
     doautocmd <nomodeline> User SearchxCancel
   else
     if index([s:AcceptReason.Marker], s:state.accept_reason) >= 0
-      call s:markpos(s:state.firstview)
       call feedkeys("\<Cmd>let v:hlsearch = v:false\<CR>", 'n')
       doautocmd <nomodeline> User SearchxAcceptMarker
     else
-      call s:markpos(s:state.firstview)
       call feedkeys("\<Cmd>let v:hlsearch = v:true\<CR>", 'n')
       doautocmd <nomodeline> User SearchxAcceptReturn
     endif
@@ -65,22 +64,14 @@ endfunction
 " searchx#search_next
 "
 function searchx#search_next() abort
-  let l:view = winsaveview()
   call s:goto_next()
-  if mode() != 'c'
-    call s:markpos(l:view)
-  endif
 endfunction
 
 "
 " searchx#search_prev
 "
 function searchx#search_prev() abort
-  let l:view = winsaveview()
   call s:goto_prev()
-  if mode() != 'c'
-    call s:markpos(l:view)
-  endif
 endfunction
 
 "
@@ -107,7 +98,7 @@ endfunction
 " s:goto
 "
 function! s:goto(pos) abort
-  call cursor(a:pos[0], a:pos[1])
+  call searchx#cursor#goto(a:pos)
   let s:state.matches = s:find_matches(@/, a:pos)
   if mode(1) ==# 'c'
     call s:refresh({ 'marker': v:true, 'incsearch': v:true })
@@ -144,17 +135,6 @@ function! s:detect_direction() abort
   return l:above > l:below ? s:Direction.Prev : s:Direction.Next
 endfunction
 
-"
-" s:markpos
-"
-function! s:markpos(firstview) abort
-  let l:finalview = winsaveview()
-  call winrestview(a:firstview)
-  normal! m`
-  call winrestview(l:finalview)
-  call cursor(l:finalview.lnum, l:finalview.col + 1)
-endfunction
-
 
 "
 " on_input
@@ -172,7 +152,7 @@ function! s:on_input() abort
       if l:index >= 0
         for l:match in s:state.matches.matches
           if l:match.marker ==# g:searchx.markers[l:index]
-            call cursor(l:match.lnum, l:match.col)
+            call searchx#cursor#goto([l:match.lnum, l:match.col])
             let s:state.accept_reason = s:AcceptReason.Marker
             call feedkeys("\<CR>", 'n')
             return
@@ -203,7 +183,7 @@ function! s:on_input() abort
     else
       " Move to current match.
       if s:state.matches.current isnot v:null
-        call cursor(s:state.matches.current.lnum, s:state.matches.current.col)
+        call searchx#cursor#goto([s:state.matches.current.lnum, s:state.matches.current.col])
       endif
     endif
   catch /.*/

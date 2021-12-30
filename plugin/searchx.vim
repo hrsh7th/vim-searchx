@@ -7,6 +7,15 @@ let g:searchx = get(g:, 'searchx', {})
 let g:searchx.markers = get(g:searchx, 'markers', split('ABCDEFGHIJKLMNOPQRSTUVWXYZ', '.\zs'))
 let g:searchx.convert = get(g:searchx, 'convert', { input -> input })
 
+augroup searchx-silent
+  autocmd User SearchxEnter silent
+  autocmd User SearchxLeave silent
+  autocmd User SearchxAccept silent
+  autocmd User SearchxAcceptReturn silent
+  autocmd User SearchxAcceptMarker silent
+  autocmd User SearchxCancel silent
+augroup END
+
 if !hlexists('SearchxIncSearch')
   highlight default link SearchxIncSearch IncSearch
 endif

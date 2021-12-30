@@ -16,30 +16,36 @@ let s:state.accept_reason = s:AcceptReason.Marker
 " searchx#run
 "
 function! searchx#run(...) abort
+  " initialize.
   let s:state.direction = get(a:000, 0, s:detect_direction())
   let s:state.firstview = winsaveview()
   let s:state.accept_reason = s:AcceptReason.Return
   let @/ = ''
   let v:hlsearch = v:true
 
-  augroup searchx-run
-    autocmd!
-    autocmd CmdlineChanged * call s:on_input()
-  augroup END
+  " start. 
+  augroup searchx-run | autocmd! | autocmd CmdlineChanged * call s:on_input() | augroup END
+  doautocmd <nomodeline> User SearchxEnter
   let l:return = input('/')
-  augroup searchx-run
-    autocmd!
-  augroup END
-  call s:clear()
+  doautocmd <nomodeline> User SearchxLeave
+  augroup searchx-run | autocmd! | augroup END
 
+  " finalize. 
+  call s:clear()
   if l:return ==# ''
-    return winrestview(s:state.firstview)
-  elseif index([s:AcceptReason.Marker], s:state.accept_reason) >= 0
-    call s:markpos(s:state.firstview)
-    call feedkeys("\<Cmd>let v:hlsearch = v:false\<CR>", 'n')
+    call winrestview(s:state.firstview)
+    doautocmd <nomodeline> User SearchxCancel
   else
-    call s:markpos(s:state.firstview)
-    call feedkeys("\<Cmd>let v:hlsearch = v:true\<CR>", 'n')
+    if index([s:AcceptReason.Marker], s:state.accept_reason) >= 0
+      call s:markpos(s:state.firstview)
+      call feedkeys("\<Cmd>let v:hlsearch = v:false\<CR>", 'n')
+      doautocmd <nomodeline> User SearchxAcceptMarker
+    else
+      call s:markpos(s:state.firstview)
+      call feedkeys("\<Cmd>let v:hlsearch = v:true\<CR>", 'n')
+      doautocmd <nomodeline> User SearchxAcceptReturn
+    endif
+    doautocmd <nomodeline> User SearchxAccept
   endif
 endfunction
 

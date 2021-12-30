@@ -2,6 +2,7 @@
 
 The extended search motion.
 
+
 ### Settings
 
 ```vim

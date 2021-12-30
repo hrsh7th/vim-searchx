@@ -9,6 +9,7 @@ Usage                                                            |searchx-usage|
 Function                                                      |searchx-function|
 Variable                                                      |searchx-variable|
 Highlight                                                    |searchx-highlight|
+Autocmd                                                        |searchx-autocmd|
 
 
 
@@ -96,19 +97,58 @@ g:searchx.convert~
 ==============================================================================
 Highlight                                                    *searchx-highlight*
 
+                                                            *hi-SeachxIncSearch*
 SearchxIncSearch~
 
   The incsearch hilights.
 
+                                                               *hi-SeachxMarker*
 SearchxMarker~
 
   The marker highlights.
 
-SearchxMakerCurrent~
+                                                       *hi-SearchxMarkerCurrent*
+SearchxMarkerCurrent~
 
   The current maker highlights.
 
 
+
 ==============================================================================
- vim:tw=78:ts=4:et:ft=help:norl:
+Autocmd                                                        *searchx-autocmd*
+
+                                                                  *SearchxEnter*
+SearchxEnter~
+
+  Enter searchx prompt.
+
+                                                                  *SearchxLeave*
+SearchxLeave~
+
+  Leave searchx prompt.
+
+                                                                  *SearchxAccept*
+SearchxAccept~
+
+  Accept some jump point.
+
+                                                            *SearchxAcceptReturn*
+SearchxAcceptReturn~
+
+  Accept some jump point via <CR>.
+
+                                                            *SearchxAcceptMarker*
+SearchxAcceptMarker~
+
+  Accept some jump point via marker.
+
+                                                                  *SearchxCancel*
+SearchxCancel~
+
+  Cancel searchx prompt.
+
+
+
+==============================================================================
+vim:tw=78:ts=4:et:ft=help:norl:
 

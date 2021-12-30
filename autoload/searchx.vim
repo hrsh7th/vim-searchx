@@ -103,6 +103,7 @@ endfunction
 " s:goto
 "
 function! s:goto(pos) abort
+  normal! m`
   call cursor(a:pos[0], a:pos[1])
   let s:state.matches = s:find_matches(@/, a:pos)
   let l:is_cmdline = mode(1) ==# 'c'

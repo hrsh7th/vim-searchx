@@ -1,57 +1,44 @@
-A plugin that improves experimental /.
+# vim-searchx
 
-I've written a lot of similar plugins and thrown them away.
+The extended search motion.
 
-I don't know if to maintain this.
+### Settings
 
 ```vim
-nnoremap / <Cmd>call searchx#run(1)<CR>
+" Overwrite / and ?.
 nnoremap ? <Cmd>call searchx#run(0)<CR>
-xnoremap / <Cmd>call searchx#run(1)<CR>
+nnoremap / <Cmd>call searchx#run(1)<CR>
 xnoremap ? <Cmd>call searchx#run(0)<CR>
+xnoremap / <Cmd>call searchx#run(1)<CR>
 
-nnoremap n <Cmd>call searchx#search_next()<CR>
-nnoremap N <Cmd>call searchx#search_prev()<CR>
-xnoremap n <Cmd>call searchx#search_next()<CR>
-xnoremap N <Cmd>call searchx#search_prev()<CR>
-
-cnoremap <C-j> <Cmd>call searchx#search_next()<CR>
+" Move to next/prev match.
+nnoremap <C-k> <Cmd>call searchx#search_prev()<CR>
+nnoremap <C-j> <Cmd>call searchx#search_next()<CR>
+xnoremap <C-k> <Cmd>call searchx#search_prev()<CR>
+xnoremap <C-j> <Cmd>call searchx#search_next()<CR>
 cnoremap <C-k> <Cmd>call searchx#search_prev()<CR>
+cnoremap <C-j> <Cmd>call searchx#search_next()<CR>
 
+" Clear highlights
 nnoremap <C-l> <Cmd>call searchx#clear()<CR>
 
+" Customize behaviors.
 let g:searchx = {}
-
-"
-" You can customize markers.
-"
-let g:searchx.markers = split('asdfghjkl;', '.\zs')
-
-"
-" You can customize regex pattern via `g:searchx.convert`.
-"
+let g:searchx.markers = split('asdfhjkl;', '.\zs')
 function g:searchx.convert(input) abort
-  let l:input = a:input
-
-  " <Space> as fuzzy match separator.
-  let l:input = join(split(l:input, ' '), '.\{-}')
-
-  " / as word-end identifier.
-  if l:input[strlen(l:input) - 1] ==# '/'
-    let l:input = l:input[0 : strlen(l:input) - 2] .. '\k*\zs.'
+  if a:input !~# '\k'
+    return '\V' .. a:input
   endif
-
-  " symbol only input as literal pattern.
-  if l:input !~# '\k'
-    let l:input = '\V' .. l:input
-  endif
-
-  return l:input
+  return '\<' .. join(split(a:input, ' '), '.\{-}')
 endfunction
 ```
 
 
-### Similar plugins
+### Side note
+
+I was develop similar plugins before for experimenting and thrown them away.
+
+I don't know if to maintein it, but this plugin is more convenient than the followings.
 
 - [vim-seak](https://github.com/hrsh7th/vim-seak)
 - [vim-foolish-move](https://github.com/hrsh7th/vim-foolish-move)

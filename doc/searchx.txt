@@ -148,6 +148,10 @@ SearchxCancel~
 
   Cancel searchx prompt.
 
+                                                           *SearchxInputChanged*
+SearchxInputChanged~
+
+  Changed searchx prompt.
 
 
 ==============================================================================

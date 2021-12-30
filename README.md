@@ -34,12 +34,11 @@ nnoremap <C-l> <Cmd>call searchx#clear()<CR>
 
 " Customize behaviors.
 let g:searchx = {}
-let g:searchx.markers = split('asdfhjkl;', '.\zs')
 function g:searchx.convert(input) abort
   if a:input !~# '\k'
     return '\V' .. a:input
   endif
-  let l:sep = a:input[0] =~# '[[:alnum:]]' ? '[^[:alnum:]]\zs' : '[[:alnum:]]\zs'
+  let l:sep = a:input[0] =~# '[[:alnum:]]\?' ? '[^[:alnum:]]\zs' : '[[:alnum:]]\?\zs'
   return l:sep .. join(split(a:input, ' '), '.\{-}')
 endfunction
 ```

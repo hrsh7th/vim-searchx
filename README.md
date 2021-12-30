@@ -2,6 +2,11 @@
 
 The extended search motion.
 
+- Jump to the specific match via marker (like easymotion)
+- Move cursor during searching
+- Input converter
+- Improved jumplist management
+
 
 ### Settings
 

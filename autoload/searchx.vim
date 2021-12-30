@@ -162,7 +162,7 @@ function! s:on_input() abort
     else
       " Move to current match.
       if s:state.matches.current isnot v:null
-        call s:goto([s:state.matches.current.lnum, s:state.matches.current.col])
+        call searchx#cursor#goto([s:state.matches.current.lnum, s:state.matches.current.col])
       endif
     endif
   catch /.*/

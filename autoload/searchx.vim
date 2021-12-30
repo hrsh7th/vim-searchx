@@ -131,7 +131,7 @@ function! s:on_input() abort
       if l:index >= 0
         for l:match in s:state.matches.matches
           if l:match.marker ==# g:searchx.markers[l:index]
-            call s:goto([l:match.lnum, l:match.col])
+            call searchx#cursor#goto([l:match.lnum, l:match.col])
             let s:state.accept_reason = s:AcceptReason.Marker
             call feedkeys("\<CR>", 'n')
             return
@@ -188,7 +188,7 @@ function s:refresh(...) abort
       call searchx#highlight#add_marker(l:match)
     endif
   endfor
-  let v:hlsearch = len(s:state.matches.matches) > 0
+  call feedkeys(printf("\<Cmd>let v:hlsearch = %s\<CR>", len(s:state.matches.matches) > 0 ? 'v:true' : 'v:false'))
 
   redraw
 endfunction
@@ -198,7 +198,7 @@ endfunction
 "
 function s:clear() abort
   call searchx#highlight#clear()
-  let v:hlsearch = v:false
+  call feedkeys("\<Cmd>let v:hlsearch = v:false\<CR>")
 endfunction
 
 "

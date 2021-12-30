@@ -25,26 +25,19 @@ function! searchx#cursor#goto(pos) abort
 
   augroup searchx-cursor-goto
     autocmd!
-    autocmd CursorMoved * call s:save()
+    autocmd CursorMoved * call s:on_cursor_moved()
   augroup END
 endfunction
 
 "
-" s:save
+" searchx#cursor#save
 "
-function! s:save() abort
-  let l:view = winsaveview()
-  let l:same = v:true
-  let l:same = l:same && l:view.lnum == s:state.finalview.lnum
-  let l:same = l:same && l:view.col == s:state.finalview.col
-  if l:same
-    return
-  endif
-
+function! searchx#cursor#save() abort
   augroup searchx-cursor-goto
     autocmd!
   augroup END
 
+  let l:view = winsaveview()
   call winrestview(s:state.firstview)
   normal! m`
   call winrestview(l:view)
@@ -52,5 +45,19 @@ function! s:save() abort
   let s:state = {}
   let s:state.firstview = v:null
   let s:state.finalview = v:null
+endfunction
+
+"
+" s:on_cursor_moved
+"
+function! s:on_cursor_moved() abort
+  let l:view = winsaveview()
+  let l:same = v:true
+  let l:same = l:same && l:view.lnum == s:state.finalview.lnum
+  let l:same = l:same && l:view.col == s:state.finalview.col
+  if l:same
+    return
+  endif
+  call searchx#save()
 endfunction
 

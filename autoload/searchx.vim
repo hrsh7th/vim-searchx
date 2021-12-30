@@ -42,6 +42,7 @@ function! searchx#run(...) abort
     call winrestview(s:state.firstview)
     doautocmd <nomodeline> User SearchxCancel
   else
+    call searchx#cursor#save()
     if index([s:AcceptReason.Marker], s:state.accept_reason) >= 0
       call feedkeys("\<Cmd>let v:hlsearch = v:false\<CR>", 'n')
       doautocmd <nomodeline> User SearchxAcceptMarker
@@ -64,32 +65,24 @@ endfunction
 " searchx#search_next
 "
 function searchx#search_next() abort
-  call s:goto_next()
+  if @/ ==# ''
+    return v:null
+  endif
+  let l:pos = searchpos(@/, 'wzn')
+  if l:pos[0] != 0
+    call s:goto(l:pos)
+  endif
 endfunction
 
 "
 " searchx#search_prev
 "
 function searchx#search_prev() abort
-  call s:goto_prev()
-endfunction
-
-"
-" s:search
-"
-function! s:goto_next() abort
-  let l:pos = s:search('wzn')
-  if !empty(l:pos)
-    call s:goto(l:pos)
+  if @/ ==# ''
+    return v:null
   endif
-endfunction
-
-"
-" s:search_prev
-"
-function! s:goto_prev() abort
-  let l:pos = s:search('wbn')
-  if !empty(l:pos)
+  let l:pos = searchpos(@/, 'wbn')
+  if l:pos[0] != 0
     call s:goto(l:pos)
   endif
 endfunction
@@ -109,20 +102,6 @@ function! s:goto(pos) abort
     \   { next -> [feedkeys("\<Cmd>let v:hlsearch = v:true\<CR>", 'n'), next()] },
     \ ])
   endif
-endfunction
-
-"
-" s:search
-"
-function! s:search(expr) abort
-  if @/ ==# ''
-    return v:null
-  endif
-  let l:pos = searchpos(@/, a:expr)
-  if l:pos[0] != 0
-    return l:pos
-  endif
-  return v:null
 endfunction
 
 "
@@ -152,7 +131,7 @@ function! s:on_input() abort
       if l:index >= 0
         for l:match in s:state.matches.matches
           if l:match.marker ==# g:searchx.markers[l:index]
-            call searchx#cursor#goto([l:match.lnum, l:match.col])
+            call s:goto([l:match.lnum, l:match.col])
             let s:state.accept_reason = s:AcceptReason.Marker
             call feedkeys("\<CR>", 'n')
             return
@@ -183,7 +162,7 @@ function! s:on_input() abort
     else
       " Move to current match.
       if s:state.matches.current isnot v:null
-        call searchx#cursor#goto([s:state.matches.current.lnum, s:state.matches.current.col])
+        call s:goto([s:state.matches.current.lnum, s:state.matches.current.col])
       endif
     endif
   catch /.*/

@@ -72,7 +72,7 @@ endfunction
 " s:search
 "
 function! s:goto_next() abort
-  let l:pos = s:search('zn')
+  let l:pos = s:search('wzn')
   if !empty(l:pos)
     call s:goto(l:pos)
   endif
@@ -82,7 +82,7 @@ endfunction
 " s:search_prev
 "
 function! s:goto_prev() abort
-  let l:pos = s:search('bn')
+  let l:pos = s:search('wbn')
   if !empty(l:pos)
     call s:goto(l:pos)
   endif
@@ -181,9 +181,9 @@ function! s:on_input() abort
     " Search for out-of-window match via native `searchpos`.
     if empty(s:state.matches.matches) && s:state.matches.current is v:null
       if s:state.direction == s:Direction.Next
-        call s:search_next()
+        call s:goto_next()
       else
-        call s:search_prev()
+        call s:goto_prev()
       endif
     else
       " Move to current match.

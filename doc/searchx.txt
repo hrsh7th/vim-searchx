@@ -23,6 +23,10 @@ Usage                                                            *searchx-usage*
   xnoremap / <Cmd>call searchx#run(1)<CR>
 
   " Move to next/prev match.
+  nnoremap N <Cmd>call searchx#search_prev()<CR>
+  nnoremap n <Cmd>call searchx#search_next()<CR>
+  xnoremap N <Cmd>call searchx#search_prev()<CR>
+  xnoremap n <Cmd>call searchx#search_next()<CR>
   nnoremap <C-k> <Cmd>call searchx#search_prev()<CR>
   nnoremap <C-j> <Cmd>call searchx#search_next()<CR>
   xnoremap <C-k> <Cmd>call searchx#search_prev()<CR>

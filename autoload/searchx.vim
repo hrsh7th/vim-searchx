@@ -24,11 +24,16 @@ function! searchx#run(...) abort
   let v:hlsearch = v:true
 
   " start. 
-  augroup searchx-run | autocmd! | autocmd CmdlineChanged * call s:on_input() | augroup END
+  augroup searchx-run
+    autocmd!
+    autocmd CmdlineChanged * call s:on_input()
+  augroup END
   doautocmd <nomodeline> User SearchxEnter
   let l:return = input('/')
   doautocmd <nomodeline> User SearchxLeave
-  augroup searchx-run | autocmd! | augroup END
+  augroup searchx-run
+    autocmd!
+  augroup END
 
   " finalize. 
   call s:clear()

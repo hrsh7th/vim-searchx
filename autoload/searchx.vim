@@ -20,7 +20,7 @@ function! searchx#run(...) abort
   let s:state.direction = get(a:000, 0, s:detect_direction())
   let s:state.firstview = winsaveview()
   let s:state.accept_reason = s:AcceptReason.Return
-  call searchx#cursor#set_firstview(s:state.firstview)
+  call searchx#cursor#save(s:state.firstview)
   let @/ = ''
   let v:hlsearch = v:true
 
@@ -42,7 +42,7 @@ function! searchx#run(...) abort
     call winrestview(s:state.firstview)
     doautocmd <nomodeline> User SearchxCancel
   else
-    call searchx#cursor#save()
+    call searchx#cursor#mark()
     if index([s:AcceptReason.Marker], s:state.accept_reason) >= 0
       call feedkeys("\<Cmd>let v:hlsearch = v:false\<CR>", 'n')
       doautocmd <nomodeline> User SearchxAcceptMarker
@@ -113,7 +113,6 @@ function! s:detect_direction() abort
   let l:below = line('w$') - l:curpos[0]
   return l:above > l:below ? s:Direction.Prev : s:Direction.Next
 endfunction
-
 
 "
 " on_input

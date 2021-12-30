@@ -3,9 +3,9 @@ let s:state.firstview = v:null
 let s:state.finalview = v:null
 
 "
-" searchx#cursor#set_firstview
+" searchx#cursor#save
 "
-function! searchx#cursor#set_firstview(view) abort
+function! searchx#cursor#save(view) abort
   let s:state.firstview = a:view
 endfunction
 
@@ -30,9 +30,13 @@ function! searchx#cursor#goto(pos) abort
 endfunction
 
 "
-" searchx#cursor#save
+" searchx#cursor#mark
 "
-function! searchx#cursor#save() abort
+function! searchx#cursor#mark() abort
+  if empty(s:state.firstview)
+    return
+  endif
+
   augroup searchx-cursor-goto
     autocmd!
   augroup END
@@ -58,6 +62,6 @@ function! s:on_cursor_moved() abort
   if l:same
     return
   endif
-  call searchx#save()
+  call searchx#cursor#mark()
 endfunction
 

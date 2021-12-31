@@ -285,7 +285,9 @@ function! s:find_matches(input, curpos) abort
   let l:next = empty(l:next) ? l:prev : l:next
   let l:prev = empty(l:prev) ? l:next : l:prev
   let l:current = s:state.direction == s:Direction.Next ? l:next : l:prev
-  let l:current.current = v:true
+  if !empty(l:current)
+    let l:current.current = v:true
+  endif
 
   return { 'matches': l:matches, 'current': l:current }
 endfunction

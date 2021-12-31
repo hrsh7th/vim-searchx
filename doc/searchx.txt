@@ -72,6 +72,11 @@ searchx#clear()~
 ==============================================================================
 Variable                                                      *searchx-variable*
 
+                                                         *g:searchx.auto_accept*
+g:searchx.auto_accept~
+
+  Specify check the marker jump on every input or not.
+
                                                              *g:searchx.markers*
 g:serachx.markers~
 

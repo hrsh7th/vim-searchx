@@ -32,8 +32,15 @@ cnoremap <C-j> <Cmd>call searchx#next()<CR>
 " Clear highlights
 nnoremap <C-l> <Cmd>call searchx#clear()<CR>
 
-" Customize behaviors.
 let g:searchx = {}
+
+" Auto jump if the recent input matches to any marker.
+let g:searchx.auto_accept = v:true
+
+" Marker characters.
+let g:searchx.markers = split('ABCDEFGHIJKLMNOPQRSTUVWXYZ', '.\zs')
+
+" Convert search pattern.
 function g:searchx.convert(input) abort
   if a:input !~# '\k'
     return '\V' .. a:input

@@ -57,6 +57,29 @@ function! searchx#start(...) abort
 endfunction
 
 "
+" searchx#select
+"
+function! searchx#select() abort
+  let s:state.matches = s:find_matches(@/, getcurpos()[1:2])
+  call s:refresh({ 'marker': v:true, 'incsearch': v:false })
+
+  function! s:callback(timer) abort closure
+    if getchar(1) != 0
+      return
+    endif
+    call timer_stop(a:timer)
+
+    let l:char = nr2char(getchar())
+    for l:match in s:state.matches.matches
+      if l:match.marker ==# l:char
+        return s:accept_marker(l:match)
+      endif
+    endfor
+  endfunction
+  call timer_start(0, function('s:callback'), { 'repeat': -1 })
+endfunction
+
+"
 " searchx#clear
 "
 function! searchx#clear() abort
@@ -96,13 +119,24 @@ function! s:goto(pos) abort
   call searchx#cursor#goto(a:pos)
   let s:state.matches = s:find_matches(@/, a:pos)
   if mode(1) ==# 'c'
-    call s:refresh({ 'marker': v:true, 'incsearch': v:true })
+    call s:refresh({ 'marker': g:searchx.auto_accept, 'incsearch': v:true })
   else
     call searchx#async#step([
     \   { next -> [s:refresh({ 'marker': v:false, 'incsearch': v:true }), searchx#async#timeout('goto', 500, next)] },
     \   { next -> [s:refresh({ 'marker': v:false, 'incsearch': v:false }), next()] },
     \   { next -> [searchx#hlsearch#set(v:true), next()] },
     \ ])
+  endif
+endfunction
+
+"
+" s:accept_marker
+"
+function! s:accept_marker(match) abort
+  let s:state.accept_reason = s:AcceptReason.Marker
+  call searchx#cursor#goto([a:match.lnum, a:match.col])
+  if mode() ==# 'c'
+    call feedkeys("\<CR>", 'n')
   endif
 endfunction
 
@@ -127,15 +161,12 @@ function! s:on_input() abort
     endif
 
     " Check marker.
-    if strlen(l:input) > 0
+    if g:searchx.auto_accept && strlen(l:input) > 0
       let l:index = index(g:searchx.markers, l:input[strlen(l:input) - 1])
       if l:index >= 0
         for l:match in s:state.matches.matches
           if l:match.marker ==# g:searchx.markers[l:index]
-            call searchx#cursor#goto([l:match.lnum, l:match.col])
-            let s:state.accept_reason = s:AcceptReason.Marker
-            call feedkeys("\<CR>", 'n')
-            return
+            return s:accept_marker(l:match)
           endif
         endfor
       endif
@@ -151,7 +182,7 @@ function! s:on_input() abort
 
     " Update view state.
     let s:state.matches = s:find_matches(@/, [s:state.firstview.lnum, s:state.firstview.col + 1])
-    call s:refresh({ 'marker': v:true })
+    call s:refresh({ 'marker': g:searchx.auto_accept })
 
     " Search off-screen match.
     if empty(s:state.matches.matches)

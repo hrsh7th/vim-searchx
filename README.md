@@ -12,10 +12,10 @@ The extended search motion.
 
 ```vim
 " Overwrite / and ?.
-nnoremap ? <Cmd>call searchx#run(0)<CR>
-nnoremap / <Cmd>call searchx#run(1)<CR>
-xnoremap ? <Cmd>call searchx#run(0)<CR>
-xnoremap / <Cmd>call searchx#run(1)<CR>
+nnoremap ? <Cmd>call searchx#run({ 'dir': 0 })<CR>
+nnoremap / <Cmd>call searchx#run({ 'dir': 1 })<CR>
+xnoremap ? <Cmd>call searchx#run({ 'dir': 0 })<CR>
+xnoremap / <Cmd>call searchx#run({ 'dir': 1 })<CR>
 
 " Move to next/prev match.
 nnoremap N <Cmd>call searchx#search_prev()<CR>

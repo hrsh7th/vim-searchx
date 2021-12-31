@@ -137,6 +137,8 @@ function! s:accept_marker(match) abort
   call searchx#cursor#goto([a:match.lnum, a:match.col])
   if mode() ==# 'c'
     call feedkeys("\<CR>", 'n')
+  else
+    call s:clear()
   endif
 endfunction
 

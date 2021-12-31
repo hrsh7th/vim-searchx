@@ -165,6 +165,8 @@ function! s:on_input() abort
         call searchx#cursor#goto([s:state.matches.current.lnum, s:state.matches.current.col])
       endif
     endif
+
+    doautocmd <nomodeline> User SearchxInputChanged
   catch /.*/
     echomsg string({ 'exception': v:exception, 'throwpoint': v:throwpoint })
   endtry

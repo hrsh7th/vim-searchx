@@ -18,22 +18,22 @@ Usage                                                            *searchx-usage*
 
 >
   " Overwrite / and ?.
-  nnoremap ? <Cmd>call searchx#run({ 'dir': 0 })<CR>
-  nnoremap / <Cmd>call searchx#run({ 'dir'; 1 })<CR>
-  xnoremap ? <Cmd>call searchx#run({ 'dir': 0 })<CR>
-  xnoremap / <Cmd>call searchx#run({ 'dir': 1 })<CR>
+  nnoremap ? <Cmd>call searchx#start({ 'dir': 0 })<CR>
+  nnoremap / <Cmd>call searchx#start({ 'dir'; 1 })<CR>
+  xnoremap ? <Cmd>call searchx#start({ 'dir': 0 })<CR>
+  xnoremap / <Cmd>call searchx#start({ 'dir': 1 })<CR>
 
   " Move to next/prev match.
-  nnoremap N <Cmd>call searchx#search_prev()<CR>
-  nnoremap n <Cmd>call searchx#search_next()<CR>
-  xnoremap N <Cmd>call searchx#search_prev()<CR>
-  xnoremap n <Cmd>call searchx#search_next()<CR>
-  nnoremap <C-k> <Cmd>call searchx#search_prev()<CR>
-  nnoremap <C-j> <Cmd>call searchx#search_next()<CR>
-  xnoremap <C-k> <Cmd>call searchx#search_prev()<CR>
-  xnoremap <C-j> <Cmd>call searchx#search_next()<CR>
-  cnoremap <C-k> <Cmd>call searchx#search_prev()<CR>
-  cnoremap <C-j> <Cmd>call searchx#search_next()<CR>
+  nnoremap N <Cmd>call searchx#prev()<CR>
+  nnoremap n <Cmd>call searchx#next()<CR>
+  xnoremap N <Cmd>call searchx#prev()<CR>
+  xnoremap n <Cmd>call searchx#next()<CR>
+  nnoremap <C-k> <Cmd>call searchx#prev()<CR>
+  nnoremap <C-j> <Cmd>call searchx#next()<CR>
+  xnoremap <C-k> <Cmd>call searchx#prev()<CR>
+  xnoremap <C-j> <Cmd>call searchx#next()<CR>
+  cnoremap <C-k> <Cmd>call searchx#prev()<CR>
+  cnoremap <C-j> <Cmd>call searchx#next()<CR>
 
   " Clear highlights
   nnoremap <C-l> <Cmd>call searchx#clear()<CR>
@@ -43,8 +43,8 @@ Usage                                                            *searchx-usage*
 ==============================================================================
 Function                                                      *searchx-function*
 
-                                                                 *searchx#run()*
-searchx#run([direction])~
+                                                               *searchx#start()*
+searchx#start([direction])~
 
   Start / or ? like command.
 
@@ -52,13 +52,13 @@ searchx#run([direction])~
     - 0: prev (?)
     - 1: next (/)
 
-                                                         *searchx#search_next()*
-searchx#search_next()~
+                                                         *searchx#next()*
+searchx#next()~
 
   Move to next match.
 
-                                                         *searchx#search_prev()*
-searchx#search_prev()~
+                                                         *searchx#prev()*
+searchx#prev()~
 
   Move to prev match.
 
@@ -89,8 +89,7 @@ g:searchx.convert~
     if a:input !~# '\k'
       return '\V' .. a:input
     endif
-    let l:sep = a:input[0] =~# '[[:alnum:]]' ? '\%([^[:alnum:]]\|^\)\zs' : '\%([[:alnum:]]\|^\)\?\zs'
-    return l:sep .. join(split(a:input, ' '), '.\{-}')
+    return join(split(a:input, ' '), '.\{-}')
   endfunction
 <
 
@@ -128,30 +127,30 @@ SearchxLeave~
 
   Leave searchx prompt.
 
-                                                                  *SearchxAccept*
-SearchxAccept~
-
-  Accept some jump point.
-
-                                                            *SearchxAcceptReturn*
-SearchxAcceptReturn~
-
-  Accept some jump point via <CR>.
-
-                                                            *SearchxAcceptMarker*
-SearchxAcceptMarker~
-
-  Accept some jump point via marker.
-
-                                                                  *SearchxCancel*
-SearchxCancel~
-
-  Cancel searchx prompt.
-
                                                            *SearchxInputChanged*
 SearchxInputChanged~
 
   Changed searchx prompt.
+
+                                                                 *SearchxAccept*
+SearchxAccept~
+
+  Accept some jump point.
+
+                                                           *SearchxAcceptReturn*
+SearchxAcceptReturn~
+
+  Accept some jump point via <CR>.
+
+                                                           *SearchxAcceptMarker*
+SearchxAcceptMarker~
+
+  Accept some jump point via marker.
+
+                                                                 *SearchxCancel*
+SearchxCancel~
+
+  Cancel searchx prompt.
 
 
 ==============================================================================

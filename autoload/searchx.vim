@@ -65,9 +65,9 @@ function! searchx#clear() abort
 endfunction
 
 "
-" searchx#search_next
+" searchx#next
 "
-function searchx#search_next() abort
+function searchx#next() abort
   if @/ ==# ''
     return v:null
   endif
@@ -78,9 +78,9 @@ function searchx#search_next() abort
 endfunction
 
 "
-" searchx#search_prev
+" searchx#prev
 "
-function searchx#search_prev() abort
+function searchx#prev() abort
   if @/ ==# ''
     return v:null
   endif
@@ -157,9 +157,9 @@ function! s:on_input() abort
     " Search for out-of-window match via native `searchpos`.
     if empty(s:state.matches.matches) && s:state.matches.current is v:null
       if s:state.direction == s:Direction.Next
-        call searchx#search_next()
+        call searchx#next()
       else
-        call searchx#search_prev()
+        call searchx#prev()
       endif
     else
       " Move to current match.

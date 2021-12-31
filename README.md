@@ -12,22 +12,22 @@ The extended search motion.
 
 ```vim
 " Overwrite / and ?.
-nnoremap ? <Cmd>call searchx#run({ 'dir': 0 })<CR>
-nnoremap / <Cmd>call searchx#run({ 'dir': 1 })<CR>
-xnoremap ? <Cmd>call searchx#run({ 'dir': 0 })<CR>
-xnoremap / <Cmd>call searchx#run({ 'dir': 1 })<CR>
+nnoremap ? <Cmd>call searchx#start({ 'dir': 0 })<CR>
+nnoremap / <Cmd>call searchx#start({ 'dir': 1 })<CR>
+xnoremap ? <Cmd>call searchx#start({ 'dir': 0 })<CR>
+xnoremap / <Cmd>call searchx#start({ 'dir': 1 })<CR>
 
 " Move to next/prev match.
-nnoremap N <Cmd>call searchx#search_prev()<CR>
-nnoremap n <Cmd>call searchx#search_next()<CR>
-xnoremap N <Cmd>call searchx#search_prev()<CR>
-xnoremap n <Cmd>call searchx#search_next()<CR>
-nnoremap <C-k> <Cmd>call searchx#search_prev()<CR>
-nnoremap <C-j> <Cmd>call searchx#search_next()<CR>
-xnoremap <C-k> <Cmd>call searchx#search_prev()<CR>
-xnoremap <C-j> <Cmd>call searchx#search_next()<CR>
-cnoremap <C-k> <Cmd>call searchx#search_prev()<CR>
-cnoremap <C-j> <Cmd>call searchx#search_next()<CR>
+nnoremap N <Cmd>call searchx#prev()<CR>
+nnoremap n <Cmd>call searchx#next()<CR>
+xnoremap N <Cmd>call searchx#prev()<CR>
+xnoremap n <Cmd>call searchx#next()<CR>
+nnoremap <C-k> <Cmd>call searchx#prev()<CR>
+nnoremap <C-j> <Cmd>call searchx#next()<CR>
+xnoremap <C-k> <Cmd>call searchx#prev()<CR>
+xnoremap <C-j> <Cmd>call searchx#next()<CR>
+cnoremap <C-k> <Cmd>call searchx#prev()<CR>
+cnoremap <C-j> <Cmd>call searchx#next()<CR>
 
 " Clear highlights
 nnoremap <C-l> <Cmd>call searchx#clear()<CR>
@@ -38,8 +38,7 @@ function g:searchx.convert(input) abort
   if a:input !~# '\k'
     return '\V' .. a:input
   endif
-  let l:sep = a:input[0] =~# '[[:alnum:]]' ? '\%([^[:alnum:]]\|^\)\zs' : '\%([[:alnum:]]\|^\)\?\zs'
-  return l:sep .. join(split(a:input, ' '), '.\{-}')
+  return join(split(a:input, ' '), '.\{-}')
 endfunction
 ```
 

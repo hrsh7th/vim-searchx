@@ -210,6 +210,7 @@ endfunction
 " refresh
 "
 function s:refresh(...) abort
+  call searchx#async#timeout('goto', 0, { -> {} })
   call s:clear()
 
   let l:option = get(a:000, 0, {})

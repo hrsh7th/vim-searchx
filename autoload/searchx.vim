@@ -16,8 +16,10 @@ let s:state.accept_reason = s:AcceptReason.Marker
 " searchx#run
 "
 function! searchx#run(...) abort
+  let l:option = get(a:000, 0, {})
+
   " initialize.
-  let s:state.direction = get(a:000, 0, s:detect_direction())
+  let s:state.direction = has_key(l:option, 'dir') ? l:option.dir : s:detect_direction()
   let s:state.firstview = winsaveview()
   let s:state.accept_reason = s:AcceptReason.Return
   call searchx#cursor#save(s:state.firstview)

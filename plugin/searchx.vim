@@ -10,6 +10,8 @@ let g:searchx.convert = get(g:searchx, 'convert', { input -> input })
 augroup searchx-silent
   autocmd User SearchxEnter silent
   autocmd User SearchxLeave silent
+  autocmd User SearchxInputChanged silent
+  autocmd User SearchxCancel silent
   autocmd User SearchxAccept silent
   autocmd User SearchxAcceptReturn silent
   autocmd User SearchxAcceptMarker silent

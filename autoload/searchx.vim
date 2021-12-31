@@ -153,15 +153,15 @@ function! s:on_input() abort
     let s:state.matches = s:find_matches(@/, [s:state.firstview.lnum, s:state.firstview.col + 1])
     call s:refresh({ 'marker': v:true })
 
-    " Search for out-of-window match via native `searchpos`.
-    if empty(s:state.matches.matches) && s:state.matches.current is v:null
+    " Search off-screen match.
+    if empty(s:state.matches.matches)
       if s:state.direction == s:Direction.Next
         call searchx#next()
       else
         call searchx#prev()
       endif
+    " Move to current match.
     else
-      " Move to current match.
       if s:state.matches.current isnot v:null
         call searchx#cursor#goto([s:state.matches.current.lnum, s:state.matches.current.col])
       endif
@@ -223,7 +223,7 @@ function! s:find_matches(input, curpos) abort
       if l:m[0] ==# ''
         break
       endif
-      
+
       let l:match = {
       \   'id': len(l:matches) + 1,
       \   'lnum': l:lnum_s + l:i,
@@ -232,26 +232,29 @@ function! s:find_matches(input, curpos) abort
       \   'marker': get(g:searchx.markers, len(l:matches), v:null),
       \   'current': v:false,
       \ }
+
+      " nearest next.
       if empty(l:next) && (a:curpos[0] < l:match.lnum || a:curpos[0] == l:match.lnum && a:curpos[1] <= l:match.col)
         let l:next = l:match
       endif
+
+      " nearest prev.
       if a:curpos[0] > l:match.lnum || a:curpos[0] == l:match.lnum && a:curpos[1] >= l:match.col
         let l:prev = l:match
       endif
+
+      " add match.
       call add(l:matches, l:match)
+
       let l:off = l:match.end_col
     endwhile
   endfor
 
+  " Select current match.
   let l:next = empty(l:next) ? l:prev : l:next
   let l:prev = empty(l:prev) ? l:next : l:prev
   let l:current = s:state.direction == s:Direction.Next ? l:next : l:prev
-  for l:match in l:matches
-    if l:match is l:current
-      let l:match.current = v:true
-      break
-    endif
-  endfor
+  let l:current.current = v:true
 
   return { 'matches': l:matches, 'current': l:current }
 endfunction

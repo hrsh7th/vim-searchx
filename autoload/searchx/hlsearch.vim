@@ -7,6 +7,7 @@ let s:state.running = v:false
 "
 function! searchx#hlsearch#set(bool) abort
   let s:state.hlsearch = a:bool
+  let v:hlsearch = a:bool
   if !s:state.running
     let s:state.running = v:true
     call feedkeys("\<Cmd>let v:hlsearch = searchx#hlsearch#get()\<CR>", 'n')

@@ -49,10 +49,10 @@ function! searchx#run(...) abort
     doautocmd <nomodeline> User SearchxAccept
     if index([s:AcceptReason.Marker], s:state.accept_reason) >= 0
       doautocmd <nomodeline> User SearchxAcceptMarker
-      call feedkeys("\<Cmd>let v:hlsearch = v:false\<CR>", 'n')
+      call searchx#hlsearch#set(v:false)
     else
       doautocmd <nomodeline> User SearchxAcceptReturn
-      call feedkeys("\<Cmd>let v:hlsearch = v:true\<CR>", 'n')
+      call searchx#hlsearch#set(v:true)
     endif
   endif
 endfunction
@@ -102,7 +102,7 @@ function! s:goto(pos) abort
     call searchx#async#step([
     \   { next -> [s:refresh({ 'marker': v:false, 'incsearch': v:true }), searchx#async#timeout('goto', 500, next)] },
     \   { next -> [s:refresh({ 'marker': v:false, 'incsearch': v:false }), next()] },
-    \   { next -> [feedkeys("\<Cmd>let v:hlsearch = v:true\<CR>", 'n'), next()] },
+    \   { next -> [searchx#hlsearch#set(v:true), next()] },
     \ ])
   endif
 endfunction
@@ -192,7 +192,7 @@ function s:refresh(...) abort
       call searchx#highlight#add_marker(l:match)
     endif
   endfor
-  call feedkeys(printf("\<Cmd>let v:hlsearch = %s\<CR>", len(s:state.matches.matches) > 0 ? 'v:true' : 'v:false'))
+  call searchx#hlsearch#set(len(s:state.matches.matches) > 0)
 
   redraw
 endfunction
@@ -202,7 +202,7 @@ endfunction
 "
 function s:clear() abort
   call searchx#highlight#clear()
-  call feedkeys("\<Cmd>let v:hlsearch = v:false\<CR>")
+  call searchx#hlsearch#set(v:false)
 endfunction
 
 "

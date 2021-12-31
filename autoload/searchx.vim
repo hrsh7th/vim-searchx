@@ -13,9 +13,9 @@ let s:state.matches = { 'matches': [], 'current': v:null }
 let s:state.accept_reason = s:AcceptReason.Marker
 
 "
-" searchx#run
+" searchx#start
 "
-function! searchx#run(...) abort
+function! searchx#start(...) abort
   let l:option = get(a:000, 0, {})
 
   " initialize.

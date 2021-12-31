@@ -70,6 +70,7 @@ function! searchx#select() abort
     call timer_stop(a:timer)
 
     let l:char = nr2char(getchar())
+    call s:clear()
     for l:match in s:state.matches.matches
       if l:match.marker ==# l:char
         return s:accept_marker(l:match)

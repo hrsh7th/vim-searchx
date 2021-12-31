@@ -23,8 +23,8 @@ function! searchx#start(...) abort
   let s:state.firstview = winsaveview()
   let s:state.accept_reason = s:AcceptReason.Return
   call searchx#cursor#save(s:state.firstview)
+  call searchx#hlsearch#set(v:true)
   let @/ = ''
-  let v:hlsearch = v:true
 
   " start. 
   augroup searchx-run
@@ -38,9 +38,8 @@ function! searchx#start(...) abort
     autocmd!
   augroup END
 
-  " finalize. 
+  " finalize.
   call s:clear()
-  redraw
   if l:return ==# ''
     call winrestview(s:state.firstview)
     doautocmd <nomodeline> User SearchxCancel

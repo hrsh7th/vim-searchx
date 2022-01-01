@@ -45,13 +45,13 @@ Usage                                                            *searchx-usage*
 Function                                                      *searchx-function*
 
                                                                *searchx#start()*
-searchx#start([direction])~
+searchx#start([opts])~
 
   Start / or ? like command.
 
-  The `direction` can be the following values.
-    - 0: prev (?)
-    - 1: next (/)
+  The `opts` argument can have the following properties.
+    - `dir`
+      - The search direction. 0 is prev. 1 is next.
 
                                                          *searchx#next()*
 searchx#next()~

@@ -1,6 +1,7 @@
 let s:AcceptReason = {}
 let s:AcceptReason.Marker = 1
 let s:AcceptReason.Return = 2
+let s:AcceptReason.Choice = 3
 
 let s:Direction = {}
 let s:Direction.Prev = 0
@@ -94,10 +95,13 @@ function searchx#next() abort
   if @/ ==# ''
     return v:null
   endif
-  let l:pos = searchpos(@/, 'wzn')
-  if l:pos[0] != 0
-    call s:goto(l:pos)
-  endif
+  for l:i in range(1, mode() ==# 'c' ? 1 : v:count1)
+    let l:pos = searchpos(@/, 'wzn')
+    if l:pos[0] != 0
+      call s:goto(l:pos)
+    endif
+  endfor
+  redraw
 endfunction
 
 "
@@ -107,10 +111,13 @@ function searchx#prev() abort
   if @/ ==# ''
     return v:null
   endif
-  let l:pos = searchpos(@/, 'wbn')
-  if l:pos[0] != 0
-    call s:goto(l:pos)
-  endif
+  for l:i in range(1, mode() ==# 'c' ? 1 : v:count1)
+    let l:pos = searchpos(@/, 'wbn')
+    if l:pos[0] != 0
+      call s:goto(l:pos)
+    endif
+  endfor
+  redraw
 endfunction
 
 "
@@ -186,6 +193,7 @@ function! s:on_input() abort
     " Update view state.
     let s:state.matches = s:find_matches(@/, [s:state.firstview.lnum, s:state.firstview.col + 1])
     call s:refresh({ 'marker': g:searchx.auto_accept })
+    redraw
 
     " Search off-screen match.
     if empty(s:state.matches.matches)
@@ -227,8 +235,6 @@ function s:refresh(...) abort
     endif
   endfor
   call searchx#hlsearch#set(len(s:state.matches.matches) > 0)
-
-  redraw
 endfunction
 
 "

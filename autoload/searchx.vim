@@ -23,9 +23,10 @@ function! searchx#start(...) abort
   let s:state.direction = has_key(l:option, 'dir') ? l:option.dir : s:detect_direction()
   let s:state.firstview = winsaveview()
   let s:state.accept_reason = s:AcceptReason.Return
-  call searchx#cursor#save(s:state.firstview)
-  call searchx#hlsearch#set(v:true)
   let @/ = ''
+  call searchx#searchundo#searchforward(s:state.direction)
+  call searchx#searchundo#hlsearch(v:true)
+  call searchx#cursor#save(s:state.firstview)
 
   " start. 
   augroup searchx-run
@@ -33,7 +34,7 @@ function! searchx#start(...) abort
     autocmd CmdlineChanged * call s:on_input()
   augroup END
   doautocmd <nomodeline> User SearchxEnter
-  let l:return = input('/')
+  let l:return = input(s:state.direction == 1 ? '/' : '?')
   doautocmd <nomodeline> User SearchxLeave
   augroup searchx-run
     autocmd!
@@ -49,10 +50,10 @@ function! searchx#start(...) abort
     doautocmd <nomodeline> User SearchxAccept
     if index([s:AcceptReason.Marker], s:state.accept_reason) >= 0
       doautocmd <nomodeline> User SearchxAcceptMarker
-      call searchx#hlsearch#set(v:false)
+      call searchx#searchundo#hlsearch(v:false)
     else
       doautocmd <nomodeline> User SearchxAcceptReturn
-      call searchx#hlsearch#set(v:true)
+      call searchx#searchundo#hlsearch(v:true)
     endif
   endif
 endfunction
@@ -89,35 +90,53 @@ function! searchx#clear() abort
 endfunction
 
 "
-" searchx#next
+" searchx#next_dir
 "
-function searchx#next() abort
-  if @/ ==# ''
-    return v:null
+function searchx#next_dir() abort
+  if v:searchforward == 0
+    return searchx#prev()
   endif
-  for l:i in range(1, mode() ==# 'c' ? 1 : v:count1)
-    let l:pos = searchpos(@/, 'wzn')
-    if l:pos[0] != 0
-      call s:goto(l:pos)
-    endif
-  endfor
-  redraw
+  call searchx#next()
+endfunction
+
+"
+" searchx#prev_dir
+"
+function searchx#prev_dir() abort
+  if v:searchforward == 0
+    return searchx#next()
+  endif
+  call searchx#prev()
 endfunction
 
 "
 " searchx#prev
 "
-function searchx#prev() abort
-  if @/ ==# ''
-    return v:null
+function! searchx#prev() abort
+  if @/ !=# ''
+    for l:i in range(1, mode() ==# 'c' ? 1 : v:count1)
+      let l:pos = searchpos(@/, 'wbn')
+      if l:pos[0] != 0
+        call s:goto(l:pos)
+      endif
+    endfor
+    redraw
   endif
-  for l:i in range(1, mode() ==# 'c' ? 1 : v:count1)
-    let l:pos = searchpos(@/, 'wbn')
-    if l:pos[0] != 0
-      call s:goto(l:pos)
-    endif
-  endfor
-  redraw
+endfunction
+
+"
+" searchx#next
+"
+function! searchx#next() abort
+  if @/ !=# ''
+    for l:i in range(1, mode() ==# 'c' ? 1 : v:count1)
+      let l:pos = searchpos(@/, 'wzn')
+      if l:pos[0] != 0
+        call s:goto(l:pos)
+      endif
+    endfor
+    redraw
+  endif
 endfunction
 
 "
@@ -132,7 +151,7 @@ function! s:goto(pos) abort
     call searchx#async#step([
     \   { next -> [s:refresh({ 'marker': v:false, 'incsearch': v:true }), searchx#async#timeout('goto', 500, next)] },
     \   { next -> [s:refresh({ 'marker': v:false, 'incsearch': v:false }), next()] },
-    \   { next -> [searchx#hlsearch#set(v:true), next()] },
+    \   { next -> [searchx#searchundo#hlsearch(v:true), next()] },
     \ ])
   endif
 endfunction
@@ -165,7 +184,6 @@ endfunction
 "
 function! s:on_input() abort
   try
-
     " Check marker.
     let l:input = getcmdline()
     if g:searchx.auto_accept && strlen(l:input) > 0
@@ -191,6 +209,7 @@ function! s:on_input() abort
 
     " Update search pattern.
     let @/ = l:input
+    call searchx#searchundo#searchforward(s:state.direction)
 
     " Update view state.
     let s:state.matches = s:find_matches(@/, [s:state.firstview.lnum, s:state.firstview.col + 1])
@@ -221,7 +240,6 @@ endfunction
 " refresh
 "
 function s:refresh(...) abort
-  call searchx#async#timeout('goto', 0, { -> {} })
   call s:clear()
 
   let l:option = get(a:000, 0, {})
@@ -236,15 +254,16 @@ function s:refresh(...) abort
       call searchx#highlight#add_marker(l:match)
     endif
   endfor
-  call searchx#hlsearch#set(len(s:state.matches.matches) > 0)
+  call searchx#searchundo#hlsearch(len(s:state.matches.matches) > 0)
 endfunction
 
 "
 " clear
 "
 function s:clear() abort
+  call searchx#async#timeout('goto', 0, { -> {}})
   call searchx#highlight#clear()
-  call searchx#hlsearch#set(v:false)
+  call searchx#searchundo#hlsearch(v:false)
 endfunction
 
 "

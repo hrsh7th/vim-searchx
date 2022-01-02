@@ -25,10 +25,10 @@ Usage                                                            *searchx-usage*
   cnoremap ; <Cmd>call searchx#select()<CR>
 
   " Move to next/prev match.
-  nnoremap N <Cmd>call searchx#prev()<CR>
-  nnoremap n <Cmd>call searchx#next()<CR>
-  xnoremap N <Cmd>call searchx#prev()<CR>
-  xnoremap n <Cmd>call searchx#next()<CR>
+  nnoremap N <Cmd>call searchx#prev_dir()<CR>
+  nnoremap n <Cmd>call searchx#next_dir()<CR>
+  xnoremap N <Cmd>call searchx#prev_dir()<CR>
+  xnoremap n <Cmd>call searchx#next_dir()<CR>
   nnoremap <C-k> <Cmd>call searchx#prev()<CR>
   nnoremap <C-j> <Cmd>call searchx#next()<CR>
   xnoremap <C-k> <Cmd>call searchx#prev()<CR>
@@ -53,12 +53,22 @@ searchx#start([opts])~
     - `dir`
       - The search direction. 0 is prev. 1 is next.
 
-                                                         *searchx#next()*
+                                                            *searchx#next_dir()*
+searchx#next_dir()~
+
+  Move to next match considering |v:searchforward|, see |n|.
+
+                                                            *searchx#prev_dir()*
+searchx#prev_dir()~
+
+  Move to prev match considering |v:searchforward|, see |N|.
+
+                                                               *searchx#next()*
 searchx#next()~
 
   Move to next match.
 
-                                                         *searchx#prev()*
+                                                               *searchx#prev()*
 searchx#prev()~
 
   Move to prev match.

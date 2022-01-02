@@ -165,12 +165,9 @@ endfunction
 "
 function! s:on_input() abort
   try
-    let l:input = g:searchx.convert(getcmdline())
-    if @/ ==# l:input
-      return
-    endif
 
     " Check marker.
+    let l:input = getcmdline()
     if g:searchx.auto_accept && strlen(l:input) > 0
       let l:index = index(g:searchx.markers, l:input[strlen(l:input) - 1])
       if l:index >= 0
@@ -182,8 +179,13 @@ function! s:on_input() abort
       endif
     endif
 
+    let l:input = g:searchx.convert(l:input)
+    if @/ ==# l:input
+      return
+    endif
+
     " Check backspace.
-    if strlen(l:input) < strlen(@/)
+    if stridx(l:input, @/) != 0
       call winrestview(s:state.firstview)
     endif
 

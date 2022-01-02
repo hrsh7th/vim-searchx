@@ -19,10 +19,10 @@ xnoremap / <Cmd>call searchx#start({ 'dir': 1 })<CR>
 cnoremap ; <Cmd>call searchx#select()<CR>
 
 " Move to next/prev match.
-nnoremap N <Cmd>call searchx#prev()<CR>
-nnoremap n <Cmd>call searchx#next()<CR>
-xnoremap N <Cmd>call searchx#prev()<CR>
-xnoremap n <Cmd>call searchx#next()<CR>
+nnoremap N <Cmd>call searchx#prev_dir()<CR>
+nnoremap n <Cmd>call searchx#next_dir()<CR>
+xnoremap N <Cmd>call searchx#prev_dir()<CR>
+xnoremap n <Cmd>call searchx#next_dir()<CR>
 nnoremap <C-k> <Cmd>call searchx#prev()<CR>
 nnoremap <C-j> <Cmd>call searchx#next()<CR>
 xnoremap <C-k> <Cmd>call searchx#prev()<CR>

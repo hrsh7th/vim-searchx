@@ -206,7 +206,7 @@ function! s:on_input() abort
 
     " Check backspace.
     if stridx(l:input, @/) != 0
-      call winrestview(s:state.firstview)
+      silent noautocmd call winrestview(s:state.firstview)
     endif
 
     " Update search pattern.
@@ -214,9 +214,8 @@ function! s:on_input() abort
     call searchx#searchundo#searchforward(s:state.direction)
 
     " Update view state.
-    let s:state.matches = s:find_matches(@/, [s:state.firstview.lnum, s:state.firstview.col + 1])
+    let s:state.matches = s:find_matches(@/, getcurpos()[1:2])
     call s:refresh({ 'marker': g:searchx.auto_accept })
-    redraw
 
     " Search off-screen match.
     if empty(s:state.matches.matches)
@@ -230,6 +229,7 @@ function! s:on_input() abort
       if s:state.matches.current isnot v:null
         call searchx#cursor#goto([s:state.matches.current.lnum, s:state.matches.current.col])
       endif
+      redraw
     endif
 
     doautocmd <nomodeline> User SearchxInputChanged

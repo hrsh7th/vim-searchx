@@ -231,6 +231,8 @@ function! s:on_input() abort
     endif
 
     doautocmd <nomodeline> User SearchxInputChanged
+  catch /^Vim\%((\a\+)\)\=:E54/
+    " ignore
   catch /.*/
     echomsg string({ 'exception': v:exception, 'throwpoint': v:throwpoint })
   endtry

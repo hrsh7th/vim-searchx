@@ -1,13 +1,13 @@
 let s:AcceptReason = {}
 let s:AcceptReason.Marker = 1
 let s:AcceptReason.Return = 2
-let s:AcceptReason.Choice = 3
 
 let s:Direction = {}
 let s:Direction.Prev = 0
 let s:Direction.Next = 1
 
 let s:state = {}
+let s:state.prompt = v:false
 let s:state.direction = s:Direction.Next
 let s:state.firstview = winsaveview()
 let s:state.matches = { 'matches': [], 'current': v:null }
@@ -34,7 +34,9 @@ function! searchx#start(...) abort
     autocmd CmdlineChanged * call s:on_input()
   augroup END
   doautocmd <nomodeline> User SearchxEnter
+  let s:state.prompt = v:true
   let l:return = input(s:state.direction == 1 ? '/' : '?')
+  let s:state.prompt = v:false
   doautocmd <nomodeline> User SearchxLeave
   augroup searchx-run
     autocmd!
@@ -114,7 +116,7 @@ endfunction
 "
 function! searchx#prev() abort
   if @/ !=# ''
-    for l:i in range(1, mode() ==# 'c' ? 1 : v:count1)
+    for l:i in range(1, s:state.prompt ? 1 : v:count1)
       let l:pos = searchpos(@/, 'wbn')
       if l:pos[0] != 0
         call s:goto(l:pos)
@@ -129,7 +131,7 @@ endfunction
 "
 function! searchx#next() abort
   if @/ !=# ''
-    for l:i in range(1, mode() ==# 'c' ? 1 : v:count1)
+    for l:i in range(1, s:state.prompt ? 1 : v:count1)
       let l:pos = searchpos(@/, 'wzn')
       if l:pos[0] != 0
         call s:goto(l:pos)
@@ -145,7 +147,7 @@ endfunction
 function! s:goto(pos) abort
   call searchx#cursor#goto(a:pos)
   let s:state.matches = s:find_matches(@/, a:pos)
-  if mode(1) ==# 'c'
+  if s:state.prompt
     call s:refresh({ 'marker': g:searchx.auto_accept, 'incsearch': v:true })
   else
     call searchx#async#step([
@@ -162,7 +164,7 @@ endfunction
 function! s:accept_marker(match) abort
   let s:state.accept_reason = s:AcceptReason.Marker
   call searchx#cursor#goto([a:match.lnum, a:match.col])
-  if mode() ==# 'c'
+  if s:state.prompt
     call feedkeys("\<CR>", 'n')
   else
     call s:clear()

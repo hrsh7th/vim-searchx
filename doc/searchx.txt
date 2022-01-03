@@ -19,7 +19,7 @@ Usage                                                            *searchx-usage*
 >
   " Overwrite / and ?.
   nnoremap ? <Cmd>call searchx#start({ 'dir': 0 })<CR>
-  nnoremap / <Cmd>call searchx#start({ 'dir'; 1 })<CR>
+  nnoremap / <Cmd>call searchx#start({ 'dir': 1 })<CR>
   xnoremap ? <Cmd>call searchx#start({ 'dir': 0 })<CR>
   xnoremap / <Cmd>call searchx#start({ 'dir': 1 })<CR>
   cnoremap ; <Cmd>call searchx#select()<CR>

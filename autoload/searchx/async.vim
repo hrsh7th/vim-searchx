@@ -23,3 +23,12 @@ function! searchx#async#step(steps) abort
   call s:next()
 endfunction
 
+"
+" searchx#async#clear
+"
+function! searchx#async#clear() abort
+  for [l:k, l:v] in items(s:timers)
+    call timer_stop(l:v)
+  endfor
+endfunction
+

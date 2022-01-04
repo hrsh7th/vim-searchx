@@ -8,6 +8,7 @@ let g:searchx.auto_accept = get(g:searchx, 'auto_accept', v:false)
 let g:searchx.markers = get(g:searchx, 'markers', split('ABCDEFGHIJKLMNOPQRSTUVWXYZ', '.\zs'))
 let g:searchx.convert = get(g:searchx, 'convert', { input -> input })
 let g:searchx.scrolloff = get(g:searchx, 'scrolloff', v:null)
+let g:searchx.scrolltime = get(g:searchx, 'scrolltime', 0)
 
 augroup searchx-silent
   autocmd User SearchxEnter silent

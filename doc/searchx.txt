@@ -114,6 +114,13 @@ g:searchx.scrolloff~
   The scrolloff value for moving by |searchx#next|, |serachx#prev|,
   |searchx#next_dir|, |searchx#prev_dir|.
 
+                                                          *g:searchx.scrolltime*
+g:searchx.scrolltime~
+
+  The scrolling animation time. 0 to disable animation.
+
+
+
 ==============================================================================
 Highlight                                                    *searchx-highlight*
 

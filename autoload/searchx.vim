@@ -265,7 +265,7 @@ endfunction
 " clear
 "
 function s:clear() abort
-  call searchx#async#timeout('goto', 0, { -> {}})
+  call searchx#async#clear()
   call searchx#highlight#clear()
   call searchx#searchundo#hlsearch(v:false)
 endfunction

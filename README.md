@@ -38,6 +38,12 @@ let g:searchx = {}
 " Auto jump if the recent input matches to any marker.
 let g:searchx.auto_accept = v:true
 
+" The scrolloff value for moving to next/prev.
+let g:searchx.scrolloff = &scrolloff
+
+" To enable scrolling animation.
+let g:searchx.scrolltime = 500
+
 " Marker characters.
 let g:searchx.markers = split('ABCDEFGHIJKLMNOPQRSTUVWXYZ', '.\zs')
 

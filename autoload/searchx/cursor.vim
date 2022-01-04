@@ -20,7 +20,7 @@ function! searchx#cursor#goto(pos) abort
   if empty(s:state.firstview)
     let s:state.firstview = winsaveview()
   endif
-  call cursor(a:pos[0], a:pos[1])
+  call s:cursor(a:pos[0], a:pos[1])
   let s:state.finalview = winsaveview()
 
   augroup searchx-cursor-goto
@@ -65,3 +65,16 @@ function! s:on_cursor_moved() abort
   call searchx#cursor#mark()
 endfunction
 
+"
+" cursor
+"
+function! s:cursor(lnum, col) abort
+  let l:above = line('w0') + g:searchx.scrolloff
+  let l:below = line('w$') - g:searchx.scrolloff
+  if a:lnum < l:above
+    execute printf('noautocmd silent normal! %s', repeat("\<C-y>", l:above - a:lnum))
+  elseif l:below < a:lnum
+    execute printf('noautocmd silent normal! %s', repeat("\<C-e>", a:lnum - l:below))
+  endif
+  call cursor(a:lnum, a:col)
+endfunction

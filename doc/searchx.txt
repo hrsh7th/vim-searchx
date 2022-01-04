@@ -108,7 +108,11 @@ g:searchx.convert~
     return join(split(a:input, ' '), '.\{-}')
   endfunction
 <
+                                                           *g:searchx.scrolloff*
+g:searchx.scrolloff~
 
+  The scrolloff value for moving by |searchx#next|, |serachx#prev|,
+  |searchx#next_dir|, |searchx#prev_dir|.
 
 ==============================================================================
 Highlight                                                    *searchx-highlight*

@@ -219,6 +219,7 @@ function! s:on_input() abort
 
     " Search off-screen match.
     if empty(s:state.matches.matches)
+      silent noautocmd call winrestview(s:state.firstview)
       if s:state.direction == s:Direction.Next
         call searchx#next()
       else

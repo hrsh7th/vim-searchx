@@ -68,39 +68,53 @@ function! s:cursor(lnum, col) abort
   let l:scrolloff = g:searchx.scrolloff isnot v:null ? g:searchx.scrolloff : &scrolloff
   let l:above = line('w0') + l:scrolloff
   let l:below = line('w$') - l:scrolloff
+  let l:dir = 0
   let l:steps = []
   if a:lnum < l:above
+    let l:dir = 0
     let l:steps = repeat(["\<C-y>"], l:above - a:lnum)
   elseif l:below < a:lnum
+    let l:dir = 1
     let l:steps = repeat(["\<C-e>"], a:lnum - l:below)
   endif
 
   let l:total_value = len(l:steps) - 1
   if l:scrolloff < l:total_value
+    let l:saved_cursorline = &cursorline
+    let l:saved_scrolloff = &scrolloff
+    let l:saved_virtualedit = &virtualedit
+    let &cursorline = v:false
+    let &scrolloff = 0
+    let &virtualedit = 'all'
     let l:prev_value = 0
     let l:start_time = reltimefloat(reltime()) * 1000
     let l:curr_time = l:start_time
     let l:total_time = l:start_time + g:searchx.scrolltime
     while l:curr_time < l:total_time
-      if l:curr_time != l:start_time
-        sleep 16ms
-      endif
       let l:curr_time = reltimefloat(reltime()) * 1000
-      let l:next_value = s:cubic(l:curr_time - l:start_time, l:total_time - l:start_time, l:total_value)
+      let l:next_value = s:easing(l:start_time, l:curr_time, l:total_time, l:total_value)
       for l:i in range(l:prev_value, l:next_value)
         execute printf('normal! %s', l:steps[l:i])
       endfor
       let l:prev_value = l:next_value + 1
+
+      if l:dir == 0
+        call cursor(line('w0') + l:scrolloff - 1, a:col)
+      else
+        call cursor(line('w$') - l:scrolloff + 1, a:col)
+      endif
       redraw
+      sleep 16ms
     endwhile
+    let &cursorline = l:saved_cursorline
+    let &scrolloff = l:saved_scrolloff
+    let &virtualedit = l:saved_virtualedit
   endif
 
   call cursor(a:lnum, a:col)
 endfunction
 
-function! s:cubic(curr_time, total_time, total_value) abort
-  let l:ratio = a:curr_time / a:total_time
-  let l:ratio -= 1
-  return min([a:total_value, float2nr(ceil(a:total_value * (1 + l:ratio * l:ratio * l:ratio * l:ratio * l:ratio)))])
+function! s:easing(start_time, curr_time, total_time, total_value) abort
+  return min([a:total_value, float2nr(a:total_value * (-pow(2, -10 * ((a:curr_time - a:start_time) / (a:total_time - a:start_time)) ) + 1))])
 endfunction
 

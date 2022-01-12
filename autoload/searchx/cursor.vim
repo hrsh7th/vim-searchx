@@ -83,6 +83,7 @@ function! s:cursor(lnum, col) abort
     let l:saved_cursorline = &cursorline
     let l:saved_scrolloff = &scrolloff
     let l:saved_virtualedit = &virtualedit
+
     let &cursorline = v:false
     let &scrolloff = 0
     let &virtualedit = 'all'

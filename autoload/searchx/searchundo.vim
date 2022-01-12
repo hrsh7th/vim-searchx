@@ -36,9 +36,9 @@ endfunction
 function! s:update() abort
   if !s:state.running
     let s:state.running = v:true
-    call feedkeys("\<Cmd>let v:hlsearch = searchx#searchundo#_state().hlsearch\<CR>", 'n')
-    call feedkeys("\<Cmd>let v:searchforward = searchx#searchundo#_state().searchforward\<CR>", 'n')
-    call feedkeys("\<Cmd>call searchx#searchundo#_state({ 'running': v:false })\<CR>", 'n')
+    call feedkeys("\<Cmd>call searchx#searchundo#_state({ 'running': v:false })\<CR>", 'ni')
+    call feedkeys("\<Cmd>let v:searchforward = searchx#searchundo#_state().searchforward\<CR>", 'ni')
+    call feedkeys("\<Cmd>let v:hlsearch = searchx#searchundo#_state().hlsearch\<CR>", 'ni')
   endif
 endfunction
 

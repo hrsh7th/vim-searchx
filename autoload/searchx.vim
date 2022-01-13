@@ -220,11 +220,11 @@ function! s:on_input() abort
     " Search off-screen match.
     if empty(s:state.matches.matches)
       silent noautocmd call winrestview(s:state.firstview)
-      if s:state.direction == s:Direction.Next
-        call searchx#next()
-      else
-        call searchx#prev()
+      let l:next_pos = searchpos(@/, s:state.direction == s:Direction.Next ? 'zn' : 'bn')
+      if l:next_pos[0] == 0
+        let s:state.direction = s:state.direction == s:Direction.Next ? s:Direction.Prev : s:Direction.Next
       endif
+      call searchx#next_dir()
     " Move to current match.
     else
       if s:state.matches.current isnot v:null

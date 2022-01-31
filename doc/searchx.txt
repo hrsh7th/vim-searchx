@@ -119,6 +119,11 @@ g:searchx.scrolltime~
 
   The scrolling animation time. 0 to disable animation.
 
+                                                          *g:searchx.nohlsearch*
+g:searchx.nohlsearch~
+
+  The dictionay to enable auto nohlsearch after cursor is moved.
+  In the keys, only `jump` is supported now.
 
 
 ==============================================================================

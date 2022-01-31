@@ -89,7 +89,7 @@ g:searchx.auto_accept~
   Specify check the marker jump on every input or not.
 
                                                              *g:searchx.markers*
-g:serachx.markers~
+g:searchx.markers~
 
   The array of characters for markers.
 
@@ -111,7 +111,7 @@ g:searchx.convert~
                                                            *g:searchx.scrolloff*
 g:searchx.scrolloff~
 
-  The scrolloff value for moving by |searchx#next|, |serachx#prev|,
+  The scrolloff value for moving by |searchx#next|, |searchx#prev|,
   |searchx#next_dir|, |searchx#prev_dir|.
 
                                                           *g:searchx.scrolltime*

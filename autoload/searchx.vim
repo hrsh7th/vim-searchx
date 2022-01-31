@@ -154,8 +154,23 @@ function! s:goto(pos) abort
     \   { next -> [s:refresh({ 'marker': v:false, 'incsearch': v:true }), searchx#async#timeout('goto', 500, next)] },
     \   { next -> [s:refresh({ 'marker': v:false, 'incsearch': v:false }), next()] },
     \   { next -> [searchx#searchundo#hlsearch(v:true), next()] },
-    \ ])
+    \ ] + (g:searchx.nohlsearch.jump ? [
+    \   { next -> [s:auto_nohlsearch(), next()] },
+    \ ] : []))
   endif
+endfunction
+
+"
+" s:auto_nohlsearch
+"
+function! s:auto_nohlsearch() abort
+  augroup searchx-auto-nohlsearch
+    autocmd!
+    autocmd CursorMoved *
+          \ autocmd searchx-auto-nohlsearch CursorMoved * ++once
+          \ call searchx#searchundo#hlsearch(v:false)
+          \ | autocmd! searchx-auto-nohlsearch
+  augroup END
 endfunction
 
 "

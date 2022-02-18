@@ -12,6 +12,7 @@ let s:state.direction = s:Direction.Next
 let s:state.firstview = winsaveview()
 let s:state.matches = { 'matches': [], 'current': v:null }
 let s:state.accept_reason = s:AcceptReason.Marker
+let s:state.prompt_emptily = v:true
 
 "
 " searchx#start
@@ -37,6 +38,7 @@ function! searchx#start(...) abort
   let s:state.prompt = v:true
   let l:return = input(s:state.direction == 1 ? '/' : '?')
   let s:state.prompt = v:false
+  let s:state.prompt_emptily = v:true
   doautocmd <nomodeline> User SearchxLeave
   augroup searchx-run
     autocmd!
@@ -212,6 +214,17 @@ function! s:on_input() abort
           endif
         endfor
       endif
+    endif
+
+    " Check prompt emptiness
+    if strlen(l:input) == 0
+      if s:state.prompt_emptily
+        call feedkeys("\<CR>", 'n')
+      else
+        let s:state.prompt_emptily = v:true
+      endif
+    else
+      let s:state.prompt_emptily = v:false
     endif
 
     let l:input = g:searchx.convert(l:input)

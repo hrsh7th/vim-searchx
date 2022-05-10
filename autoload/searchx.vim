@@ -50,6 +50,7 @@ function! searchx#start(...) abort
     call winrestview(s:state.firstview)
     doautocmd <nomodeline> User SearchxCancel
   else
+    call searchx#set_history(l:return, s:state.direction)
     call searchx#cursor#mark()
     doautocmd <nomodeline> User SearchxAccept
     if index([s:AcceptReason.Marker], s:state.accept_reason) >= 0
@@ -356,3 +357,6 @@ function! s:find_matches(input, curpos) abort
   return { 'matches': l:matches, 'current': l:current }
 endfunction
 
+function! searchx#set_history(pattern, dir) abort
+  execute 'normal!' (a:dir == 1 ? '/' : '?') . a:pattern
+endfunction

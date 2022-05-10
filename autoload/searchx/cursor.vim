@@ -78,38 +78,40 @@ function! s:cursor(lnum, col) abort
     let l:steps = repeat(["\<C-e>"], a:lnum - l:below)
   endif
 
-  let l:total_value = len(l:steps) - 1
-  if l:scrolloff < l:total_value
-    let l:saved_cursorline = &cursorline
-    let l:saved_scrolloff = &scrolloff
-    let l:saved_virtualedit = &virtualedit
+  if reg_executing() ==# ''
+    let l:total_value = len(l:steps) - 1
+    if l:scrolloff < l:total_value
+      let l:saved_cursorline = &cursorline
+      let l:saved_scrolloff = &scrolloff
+      let l:saved_virtualedit = &virtualedit
 
-    let &cursorline = v:false
-    let &scrolloff = 0
-    let &virtualedit = 'all'
-    let l:prev_value = 0
-    let l:start_time = reltimefloat(reltime()) * 1000
-    let l:curr_time = l:start_time
-    let l:total_time = l:start_time + g:searchx.scrolltime
-    while l:curr_time < l:total_time
-      let l:curr_time = reltimefloat(reltime()) * 1000
-      let l:next_value = s:easing(l:start_time, l:curr_time, l:total_time, l:total_value)
-      for l:i in range(l:prev_value, l:next_value)
-        execute printf('normal! %s', l:steps[l:i])
-      endfor
-      let l:prev_value = l:next_value + 1
+      let &cursorline = v:false
+      let &scrolloff = 0
+      let &virtualedit = 'all'
+      let l:prev_value = 0
+      let l:start_time = reltimefloat(reltime()) * 1000
+      let l:curr_time = l:start_time
+      let l:total_time = l:start_time + g:searchx.scrolltime
+      while l:curr_time < l:total_time
+        let l:curr_time = reltimefloat(reltime()) * 1000
+        let l:next_value = s:easing(l:start_time, l:curr_time, l:total_time, l:total_value)
+        for l:i in range(l:prev_value, l:next_value)
+          execute printf('normal! %s', l:steps[l:i])
+        endfor
+        let l:prev_value = l:next_value + 1
 
-      if l:dir == 0
-        call cursor(line('w0') + l:scrolloff - 1, a:col)
-      else
-        call cursor(line('w$') - l:scrolloff + 1, a:col)
-      endif
-      redraw
-      sleep 16ms
-    endwhile
-    let &cursorline = l:saved_cursorline
-    let &scrolloff = l:saved_scrolloff
-    let &virtualedit = l:saved_virtualedit
+        if l:dir == 0
+          call cursor(line('w0') + l:scrolloff - 1, a:col)
+        else
+          call cursor(line('w$') - l:scrolloff + 1, a:col)
+        endif
+        redraw
+        sleep 16ms
+      endwhile
+      let &cursorline = l:saved_cursorline
+      let &scrolloff = l:saved_scrolloff
+      let &virtualedit = l:saved_virtualedit
+    endif
   endif
 
   call cursor(a:lnum, a:col)

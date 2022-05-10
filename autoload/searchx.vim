@@ -148,10 +148,11 @@ endfunction
 "
 function! s:goto(pos) abort
   call searchx#cursor#goto(a:pos)
-  let s:state.matches = s:find_matches(@/, a:pos)
   if s:state.prompt
+    let s:state.matches = s:find_matches(@/, a:pos)
     call s:refresh({ 'marker': g:searchx.auto_accept, 'incsearch': v:true })
-  else
+  elseif reg_executing() ==# ''
+    let s:state.matches = s:find_matches(@/, a:pos)
     call searchx#async#step([
     \   { next -> [s:refresh({ 'marker': v:false, 'incsearch': v:true }), searchx#async#timeout('goto', 500, next)] },
     \   { next -> [s:refresh({ 'marker': v:false, 'incsearch': v:false }), next()] },

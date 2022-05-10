@@ -50,6 +50,7 @@ function! searchx#start(...) abort
     call winrestview(s:state.firstview)
     doautocmd <nomodeline> User SearchxCancel
   else
+    call histadd('/', @/)
     call searchx#cursor#mark()
     doautocmd <nomodeline> User SearchxAccept
     if index([s:AcceptReason.Marker], s:state.accept_reason) >= 0

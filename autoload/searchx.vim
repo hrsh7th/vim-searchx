@@ -183,7 +183,8 @@ function! s:accept_marker(match) abort
   let s:state.accept_reason = s:AcceptReason.Marker
   call searchx#cursor#goto([a:match.lnum, a:match.col])
   if s:state.prompt
-    call feedkeys("\<CR>", 'n')
+    " Remove marker input.
+    call feedkeys("\<BS>\<CR>", 'n')
   else
     call s:clear()
   endif

@@ -31,14 +31,32 @@ function! searchx#searchundo#_state(...) abort
 endfunction
 
 "
-" update
+" s:update
 "
 function! s:update() abort
+  augroup search#searchundo#update
+    autocmd!
+  augroup END
+
   if !s:state.running
     let s:state.running = v:true
-    call feedkeys("\<Cmd>call searchx#searchundo#_state({ 'running': v:false })\<CR>", 'ni')
-    call feedkeys("\<Cmd>let v:searchforward = searchx#searchundo#_state().searchforward\<CR>", 'ni')
-    call feedkeys("\<Cmd>let v:hlsearch = searchx#searchundo#_state().hlsearch\<CR>", 'ni')
+    if index(['no', 'nov', 'noV', "no\<C-v>"], mode(1)) > -1
+      augroup search#searchundo#update
+        autocmd!
+        autocmd ModeChanged no:* ++once call s:do_update()
+      augroup END
+      return
+    endif
+    call s:do_update()
   endif
+endfunction
+
+"
+" s:do_update
+"
+function! s:do_update() abort
+  call feedkeys("\<Cmd>call searchx#searchundo#_state({ 'running': v:false })\<CR>", 'ni')
+  call feedkeys("\<Cmd>let v:searchforward = searchx#searchundo#_state().searchforward\<CR>", 'ni')
+  call feedkeys("\<Cmd>let v:hlsearch = searchx#searchundo#_state().hlsearch\<CR>", 'ni')
 endfunction
 

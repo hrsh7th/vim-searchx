@@ -1,9 +1,22 @@
 let s:incsearch_id = 0
 
 "
+" redraw
+"
+function! searchx#highlight#redraw() abort
+  if reg_executing() !=# ''
+    return
+  end
+  redraw
+endfunction
+
+"
 " set_incsearch
 "
 function! searchx#highlight#set_incsearch(match) abort
+  if reg_executing() !=# ''
+    return
+  endif
   let s:incsearch_id = matchaddpos('SearchxIncSearch', [[a:match.lnum, a:match.col, a:match.end_col - a:match.col]])
 endfunction
 
@@ -11,6 +24,9 @@ endfunction
 " add_marker
 "
 function! searchx#highlight#add_marker(match) abort
+  if reg_executing() !=# ''
+    return
+  endif
   call s:add_marker(a:match)
 endfunction
 

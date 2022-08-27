@@ -95,6 +95,14 @@ function! searchx#clear() abort
 endfunction
 
 "
+" searchx#set_dir
+"
+function! searchx#set_dir(dir) abort
+  let s:state.direction = a:dir
+  call searchx#searchundo#searchforward(s:state.direction)
+endfunction
+
+"
 " searchx#next_dir
 "
 function searchx#next_dir() abort
@@ -125,7 +133,7 @@ function! searchx#prev() abort
         call s:goto(l:pos)
       endif
     endfor
-    redraw
+    call searchx#highlight#redraw()
   endif
 endfunction
 
@@ -140,7 +148,7 @@ function! searchx#next() abort
         call s:goto(l:pos)
       endif
     endfor
-    redraw
+    call searchx#highlight#redraw()
   endif
 endfunction
 
@@ -261,7 +269,7 @@ function! s:on_input() abort
       if s:state.matches.current isnot v:null
         call searchx#cursor#goto([s:state.matches.current.lnum, s:state.matches.current.col])
       endif
-      redraw
+      call searchx#highlight#redraw()
     endif
 
     doautocmd <nomodeline> User SearchxInputChanged

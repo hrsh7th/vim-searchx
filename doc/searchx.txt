@@ -53,6 +53,11 @@ searchx#start([opts])~
     - `dir`
       - The search direction. 0 is prev. 1 is next.
 
+                                                             *searchx#set_dir()*
+searchx#set_dir(dir)~
+
+  Set direction without starting new search state.
+
                                                             *searchx#next_dir()*
 searchx#next_dir()~
 
@@ -63,12 +68,12 @@ searchx#prev_dir()~
 
   Move to prev match considering |v:searchforward|, see |N|.
 
-                                                               *searchx#next()*
+                                                                *searchx#next()*
 searchx#next()~
 
   Move to next match.
 
-                                                               *searchx#prev()*
+                                                                *searchx#prev()*
 searchx#prev()~
 
   Move to prev match.

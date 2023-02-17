@@ -29,12 +29,16 @@ function! searchx#start(...) abort
   call searchx#searchundo#hlsearch(v:true)
   call searchx#cursor#save(s:state.firstview)
 
-  " start. 
+  " start.
   augroup searchx-run
     autocmd!
     autocmd CmdlineChanged * call s:on_input()
   augroup END
   doautocmd <nomodeline> User SearchxEnter
+
+  " Update statusline if enter cmdline mode via `input(...)`.
+  call feedkeys("\<Cmd>redrawstatus\<CR>", 'ni')
+
   let s:state.prompt = v:true
   let l:return = input(s:state.direction == 1 ? '/' : '?')
   let s:state.prompt = v:false

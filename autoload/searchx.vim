@@ -149,6 +149,13 @@ function! searchx#next() abort
 endfunction
 
 "
+" searchx#redraw
+"
+function! searchx#redraw() abort
+  call s:on_input({ 'is_userinput': v:false })
+endfunction
+
+"
 " s:goto
 "
 function! s:goto(pos) abort
@@ -208,7 +215,10 @@ endfunction
 "
 " on_input
 "
-function! s:on_input() abort
+function! s:on_input(...) abort
+  let l:option = get(a:000, 0, {})
+  let l:option.is_userinput = get(l:option, 'is_userinput', v:true)
+
   try
     " Check marker.
     let l:input = getcmdline()
@@ -225,7 +235,7 @@ function! s:on_input() abort
 
     " Check prompt emptiness
     if strlen(l:input) == 0
-      if s:state.prompt_emptily
+      if s:state.prompt_emptily && l:option.is_userinput
         call feedkeys("\<CR>", 'n')
       else
         let s:state.prompt_emptily = v:true

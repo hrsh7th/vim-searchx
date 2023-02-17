@@ -63,15 +63,20 @@ searchx#prev_dir()~
 
   Move to prev match considering |v:searchforward|, see |N|.
 
-                                                               *searchx#next()*
+                                                                *searchx#next()*
 searchx#next()~
 
   Move to next match.
 
-                                                               *searchx#prev()*
+                                                                *searchx#prev()*
 searchx#prev()~
 
   Move to prev match.
+
+                                                              *searchx#redraw()*
+searchx#redraw()~
+
+  Redraw immediately.
 
                                                                *searchx#clear()*
 searchx#clear()~

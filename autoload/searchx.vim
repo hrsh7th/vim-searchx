@@ -13,6 +13,7 @@ let s:state.firstview = winsaveview()
 let s:state.matches = { 'matches': [], 'current': v:null }
 let s:state.accept_reason = s:AcceptReason.Marker
 let s:state.prompt_emptily = v:true
+let s:state.convert = g:searchx.convert
 
 "
 " searchx#start
@@ -24,6 +25,7 @@ function! searchx#start(...) abort
   let s:state.direction = has_key(l:option, 'dir') ? l:option.dir : s:detect_direction()
   let s:state.firstview = winsaveview()
   let s:state.accept_reason = s:AcceptReason.Return
+  let s:state.convert = get(l:option, 'convert', g:searchx.convert)
   let @/ = ''
   call searchx#searchundo#searchforward(s:state.direction)
   call searchx#searchundo#hlsearch(v:true)
@@ -244,7 +246,7 @@ function! s:on_input(...) abort
       let s:state.prompt_emptily = v:false
     endif
 
-    let l:input = g:searchx.convert(l:input)
+    let l:input = s:state.convert(l:input)
     if @/ ==# l:input
       return
     endif

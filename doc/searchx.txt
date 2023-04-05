@@ -52,6 +52,9 @@ searchx#start([opts])~
   The `opts` argument can have the following properties.
     - `dir`
       - The search direction. 0 is prev. 1 is next.
+    - `convert`
+      - A function which converts input to search pattern.
+        Default value is |g:searchx.convert|.
 
                                                             *searchx#next_dir()*
 searchx#next_dir()~

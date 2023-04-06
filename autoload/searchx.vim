@@ -92,7 +92,7 @@ function! searchx#start(...) abort
         call s:save_state()
       endif
     endif
-    if g:searchx.save_state_when ==? 'accept'
+    if g:searchx.save_state_when ==? 'accepted'
       call s:save_state()
     endif
   endif

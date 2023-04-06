@@ -8,24 +8,40 @@ let s:Direction.Next = 1
 
 let s:state = {}
 let s:state.prompt = v:false
-let s:state.direction = s:Direction.Next
 let s:state.firstview = winsaveview()
 let s:state.matches = { 'matches': [], 'current': v:null }
 let s:state.accept_reason = s:AcceptReason.Marker
 let s:state.prompt_emptily = v:true
+
+let s:state.direction = s:Direction.Next
+let s:state.input = ''
 let s:state.convert = g:searchx.convert
+let s:state.save_state_when = g:searchx.save_state_when
+
+let s:state.latest_direction = s:state.direction
+let s:state.latest_input = s:state.input
+let s:state.latest_convert = s:state.convert
+let s:state.latest_save_state_when = s:state.save_state_when
 
 "
 " searchx#start
 "
 function! searchx#start(...) abort
   let l:option = get(a:000, 0, {})
+  let l:option.dir = get(l:option, 'dir', s:detect_direction())
+  let l:option.input = get(l:option, 'input', '')
+  let l:option.convert = get(l:option, 'convert', g:searchx.convert)
+  let l:option.save_state_when = get(l:option, 'save_state_when', g:searchx.save_state_when)
+  let l:option.repeat = get(l:option, 'repeat', [])
 
   " initialize.
-  let s:state.direction = has_key(l:option, 'dir') ? l:option.dir : s:detect_direction()
+  let s:state.direction = index(l:option.repeat, 'dir') >= 0 ? s:state.latest_direction : l:option.dir
+  let s:state.input = index(l:option.repeat, 'input') >= 0 ? s:state.latest_input : l:option.input
+  let s:state.convert = index(l:option.repeat, 'convert') >= 0 ? s:state.latest_convert : l:option.convert
+  let s:state.save_state_when = index(l:option.repeat, 'save_state_when') >= 0 ? s:state.latest_save_state_when : l:option.save_state_when
+
   let s:state.firstview = winsaveview()
   let s:state.accept_reason = s:AcceptReason.Return
-  let s:state.convert = get(l:option, 'convert', g:searchx.convert)
   let @/ = ''
   call searchx#searchundo#searchforward(s:state.direction)
   call searchx#searchundo#hlsearch(v:true)
@@ -40,6 +56,10 @@ function! searchx#start(...) abort
 
   " Update statusline if enter cmdline mode via `input(...)`.
   call feedkeys("\<Cmd>redrawstatus\<CR>", 'ni')
+
+  if !empty(s:state.input)
+    call feedkeys(s:state.input, 'n')
+  endif
 
   let s:state.prompt = v:true
   let l:return = input(s:state.direction == 1 ? '/' : '?')
@@ -62,11 +82,34 @@ function! searchx#start(...) abort
     if index([s:AcceptReason.Marker], s:state.accept_reason) >= 0
       doautocmd <nomodeline> User SearchxAcceptMarker
       call searchx#searchundo#hlsearch(v:false)
+      if g:searchx.save_state_when ==? 'marker'
+        call s:save_state()
+      endif
     else
       doautocmd <nomodeline> User SearchxAcceptReturn
       call searchx#searchundo#hlsearch(v:true)
+      if g:searchx.save_state_when ==? 'enter'
+        call s:save_state()
+      endif
+    endif
+    if g:searchx.save_state_when ==? 'accepted'
+      call s:save_state()
     endif
   endif
+  if g:searchx.save_state_when ==? 'always'
+    call s:save_state()
+  endif
+endfunction
+
+"
+" save_state
+"
+function! s:save_state() abort
+  " save sate for next repeat
+  let s:state.latest_direction = s:state.direction
+  let s:state.latest_input = s:state.input
+  let s:state.latest_convert = s:state.convert
+  let s:state.latest_save_state_when = s:state.save_state_when
 endfunction
 
 "
@@ -224,6 +267,7 @@ function! s:on_input(...) abort
   try
     " Check marker.
     let l:input = getcmdline()
+    let s:state.input = l:input
     if g:searchx.auto_accept && strlen(l:input) > 0
       let l:index = index(g:searchx.markers, l:input[strlen(l:input) - 1])
       if l:index >= 0

@@ -23,6 +23,9 @@ Usage                                                            *searchx-usage*
   xnoremap ? <Cmd>call searchx#start({ 'dir': 0 })<CR>
   xnoremap / <Cmd>call searchx#start({ 'dir': 1 })<CR>
   cnoremap ; <Cmd>call searchx#select()<CR>
+  " repeat/continue latest search which is done by calling function `searchx#start`
+  nnoremap <leader>/ <Cmd>call searchx#start({ 'repeat': ['dir', 'convert', 'input', 'save_state_when'] })<CR>
+  xnoremap <leader>/ <Cmd>call searchx#start({ 'repeat': ['dir', 'convert', 'input', 'save_state_when'] })<CR>
 
   " Move to next/prev match.
   nnoremap N <Cmd>call searchx#prev_dir()<CR>
@@ -52,9 +55,28 @@ searchx#start([opts])~
   The `opts` argument can have the following properties.
     - `dir`
       - The search direction. 0 is prev. 1 is next.
+      - If 'dir' in `repeat`, the value of this argument is meaningless.
+    - `input`
+      - The input prefix for searching.
+      - If 'input' in `repeat`, the value of this argument is meaningless.
+      - Default: ''.
     - `convert`
       - A function which converts input to search pattern.
-        Default value is |g:searchx.convert|.
+      - If 'convert' in `repeat`, the value of this argument is meaningless.
+      - Default: |g:searchx.convert|.
+    - `save_state_when`
+      - Save current arguments `dir`, `input`, `convert` and `save_state_when`
+        when `save_state_when` in imminent searching.
+      - If 'save_state_when' in `repeat`, the value of this argument is
+        meaningless.
+      - Available values: 'always', 'accepted', 'marker', 'enter'
+        see |g:searchx.save_state_when|
+      - Default: |g:searchx.save_state_when|.
+    - `repeat`
+      - Repeat `dir`, `input`, `convert` and `save_state_when` which are saved
+        in latest searching.
+      - Available values: 'dir', 'input', 'convert', 'save_state_when'
+      - Default: [].
 
                                                             *searchx#next_dir()*
 searchx#next_dir()~
@@ -116,6 +138,22 @@ g:searchx.convert~
     return a:input[0] .. substitute(a:input[1:], '\\\@<! ', '.\\{-}', 'g')
   endfunction
 <
+
+                                                     *g:searchx.save_state_when*
+g:searchx.save_state_when~
+
+  Save some parameters of |searchx#start()| when |g:searchx.save_state_when|
+  The saved parameters are used to `repeat` latest searching in next call
+  |searchx#start()|
+
+  Availables values: 'always', 'accepted', 'marker', 'enter'
+  'accepted': save arguments when result is 'accepted'
+  'marker': save arguments when result is accepted by 'marker'
+  'enter': save arguments when result is accepted by 'enter'
+  'always': 'always' save searching arugments, not recommended
+
+  Default: 'accepted'
+
                                                            *g:searchx.scrolloff*
 g:searchx.scrolloff~
 

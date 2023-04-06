@@ -17,6 +17,9 @@ nnoremap / <Cmd>call searchx#start({ 'dir': 1 })<CR>
 xnoremap ? <Cmd>call searchx#start({ 'dir': 0 })<CR>
 xnoremap / <Cmd>call searchx#start({ 'dir': 1 })<CR>
 cnoremap ; <Cmd>call searchx#select()<CR>
+" repeat/continue latest search which is done by calling function `searchx#start`
+nnoremap <leader>/ <Cmd>call searchx#start({ 'repeat': ['dir', 'convert', 'input', 'save_state_when'] })<CR>
+xnoremap <leader>/ <Cmd>call searchx#start({ 'repeat': ['dir', 'convert', 'input', 'save_state_when'] })<CR>
 
 " Move to next/prev match.
 nnoremap N <Cmd>call searchx#prev_dir()<CR>
@@ -50,6 +53,10 @@ let g:searchx.nohlsearch.jump = v:true
 
 " Marker characters.
 let g:searchx.markers = split('ABCDEFGHIJKLMNOPQRSTUVWXYZ', '.\zs')
+
+" Save state when search result is accepted
+" The state is used to repeat/continue latest search which is done by calling function `searchx#start`
+let g:searchx.save_state_when = 'accepted'
 
 " Convert search pattern.
 function g:searchx.convert(input) abort

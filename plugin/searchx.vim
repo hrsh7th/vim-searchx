@@ -10,6 +10,7 @@ let g:searchx.convert = get(g:searchx, 'convert', { input -> input })
 let g:searchx.scrolloff = get(g:searchx, 'scrolloff', v:null)
 let g:searchx.scrolltime = get(g:searchx, 'scrolltime', 0)
 let g:searchx.nohlsearch = get(g:searchx, 'nohlsearch', {'jump': v:false})
+let g:searchx.save_state_when = get(g:searchx, 'save_state_when', 'accept')
 
 augroup searchx-silent
   autocmd User SearchxEnter silent

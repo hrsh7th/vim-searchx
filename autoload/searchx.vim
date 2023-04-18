@@ -36,6 +36,7 @@ function! searchx#start(...) abort
     autocmd!
     autocmd CmdlineChanged * call s:on_input()
   augroup END
+
   doautocmd <nomodeline> User SearchxEnter
 
   " Update statusline if enter cmdline mode via `input(...)`.
@@ -43,12 +44,16 @@ function! searchx#start(...) abort
 
   let s:state.prompt = v:true
   let l:return = input(s:state.direction == 1 ? '/' : '?')
+
   let s:state.prompt = v:false
   let s:state.prompt_emptily = v:true
+
   doautocmd <nomodeline> User SearchxLeave
+
   augroup searchx-run
     autocmd!
   augroup END
+
 
   " finalize.
   call s:clear()
@@ -260,6 +265,7 @@ function! s:on_input(...) abort
     let @/ = l:input
     call searchx#searchundo#searchforward(s:state.direction)
 
+
     " Update view state.
     let s:state.matches = s:find_matches(@/, getcurpos()[1:2])
     call s:refresh({ 'marker': g:searchx.auto_accept })
@@ -274,6 +280,7 @@ function! s:on_input(...) abort
       call searchx#next_dir()
     " Move to current match.
     else
+
       if s:state.matches.current isnot v:null
         call searchx#cursor#goto([s:state.matches.current.lnum, s:state.matches.current.col])
       endif
@@ -322,54 +329,213 @@ endfunction
 " find_matches
 "
 function! s:find_matches(input, curpos) abort
-  let l:lnum_s = line('w0')
+
+  let l:lnum_start = line('w0')
+  let l:lnum_s = a:curpos[0]
   let l:lnum_e = line('w$')
   let l:texts = getbufline('%', l:lnum_s, l:lnum_e)
-  let l:next = v:null
-  let l:prev = v:null
-  let l:matches = []
-  for l:i in range(0, len(l:texts) - 1)
-    let l:text = l:texts[l:i]
 
-    let l:off = 0
-    while l:off < strlen(l:text)
-      let l:m = matchstrpos(l:text, a:input, l:off, 1)
-      if l:m[0] ==# ''
-        break
-      endif
+  let l:texts_wrap = getbufline('%',l:lnum_start,  a:curpos[0] - 1)
 
-      let l:match = {
-      \   'id': len(l:matches) + 1,
-      \   'lnum': l:lnum_s + l:i,
-      \   'col': l:m[1] + 1,
-      \   'end_col': l:m[2] + 1,
-      \   'marker': get(g:searchx.markers, len(l:matches), v:null),
-      \   'current': v:false,
-      \ }
+  call reverse(l:texts_wrap)
 
-      " nearest next.
-      if empty(l:next) && (a:curpos[0] < l:match.lnum || a:curpos[0] == l:match.lnum && a:curpos[1] <= l:match.col)
-        let l:next = l:match
-      endif
+  if s:state.direction == 1
+    echom "cat"
+    echom "cat2"
+    let l:lnum_start = line('w0')
+    let l:lnum_s = a:curpos[0]
+    let l:lnum_e = line('w$')
+    let l:texts = getbufline('%', l:lnum_s, l:lnum_e)
+    let l:texts_wrap = getbufline('%',l:lnum_start,  a:curpos[0] - 1)
+    call reverse(l:texts_wrap)
+    let l:next = v:null
+    let l:prev = v:null
+    let l:matches = []
 
-      " nearest prev.
-      if a:curpos[0] > l:match.lnum || a:curpos[0] == l:match.lnum && a:curpos[1] >= l:match.col
-        let l:prev = l:match
-      endif
+    " forward match
+    for l:i in range(0, len(l:texts) - 1)
+      let l:text = l:texts[l:i]
+      let l:off = 0
+      while l:off < strlen(l:text)
+        let l:m = matchstrpos(l:text, a:input, l:off, 1)
+        if l:m[0] ==# ''
+          break
+        endif
 
-      " add match.
-      call add(l:matches, l:match)
+        let l:match = {
+        \   'id': len(l:matches) + 1,
+        \   'lnum': l:lnum_s + l:i,
+        \   'col': l:m[1] + 1,
+        \   'end_col': l:m[2] + 1,
+        \   'marker': get(g:searchx.markers, len(l:matches), v:null),
+        \   'current': v:false,
+        \ }
 
-      let l:off = l:match.end_col
-    endwhile
-  endfor
+        " nearest next.
+        if empty(l:next) && (a:curpos[0] < l:match.lnum || a:curpos[0] == l:match.lnum && a:curpos[1] <= l:match.col)
+          let l:next = l:match
+        endif
 
-  " Select current match.
-  let l:next = empty(l:next) ? l:prev : l:next
-  let l:prev = empty(l:prev) ? l:next : l:prev
-  let l:current = s:state.direction == s:Direction.Next ? l:next : l:prev
-  if !empty(l:current)
-    let l:current.current = v:true
+        " nearest prev.
+        if a:curpos[0] > l:match.lnum || a:curpos[0] == l:match.lnum && a:curpos[1] >= l:match.col
+          let l:prev = l:match
+        endif
+
+        " add match.
+        call add(l:matches, l:match)
+
+        let l:off = l:match.end_col
+      endwhile
+    endfor
+
+
+    " wrap match
+    
+    for l:i in range(0, len(l:texts_wrap) - 1)
+      let l:text = l:texts_wrap[l:i]
+      let l:off = 0
+      while l:off < strlen(l:text)
+        let l:m = matchstrpos(l:text, a:input, l:off, 1)
+        if l:m[0] ==# ''
+          break
+        endif
+
+        let l:match = {
+        \   'id': len(l:matches) + 1,
+        \   'lnum': l:lnum_s - l:i - 1,
+        \   'col': l:m[1] + 1,
+        \   'end_col': l:m[2] + 1,
+        \   'marker': get(g:searchx.markers, len(l:matches), v:null),
+        \   'current': v:false,
+        \ }
+
+        " nearest next.
+        if empty(l:next) && (a:curpos[0] < l:match.lnum || a:curpos[0] == l:match.lnum && a:curpos[1] <= l:match.col)
+          let l:next = l:match
+        endif
+
+        " nearest prev.
+        if a:curpos[0] > l:match.lnum || a:curpos[0] == l:match.lnum && a:curpos[1] >= l:match.col
+          let l:prev = l:match
+        endif
+
+        " add match.
+        call add(l:matches, l:match)
+
+        let l:off = l:match.end_col
+      endwhile
+    endfor
+  
+    " Select current match.
+    let l:next = empty(l:next) ? l:prev : l:next
+    let l:prev = empty(l:prev) ? l:next : l:prev
+    let l:current = s:state.direction == s:Direction.Next ? l:next : l:prev
+    if !empty(l:current)
+      let l:current.current = v:true
+    endif
+
+  else
+    echom 'reverse'
+
+    let l:next = v:null
+    let l:prev = v:null
+    let l:matches = []
+
+
+    " wrap match
+    
+    for l:i in range(0, len(l:texts_wrap) - 1)
+      let l:text = l:texts_wrap[l:i]
+      let l:off = 0
+      while l:off < strlen(l:text)
+        let l:m = matchstrpos(l:text, a:input, l:off, 1)
+        if l:m[0] ==# ''
+          break
+        endif
+
+        let l:match = {
+        \   'id': len(l:matches) + 1,
+        \   'lnum': l:lnum_s - l:i - 1,
+        \   'col': l:m[1] + 1,
+        \   'end_col': l:m[2] + 1,
+        \   'marker': get(g:searchx.markers, len(l:matches), v:null),
+        \   'current': v:false,
+        \ }
+
+        " nearest next.
+        if empty(l:next) && (a:curpos[0] > l:match.lnum || a:curpos[0] == l:match.lnum && a:curpos[1] >= l:match.col)
+          let l:next = l:match
+        endif
+
+        " nearest prev.
+        if a:curpos[0] < l:match.lnum || a:curpos[0] == l:match.lnum && a:curpos[1] <= l:match.col
+          let l:prev = l:match
+        endif
+
+        " add match.
+        call add(l:matches, l:match)
+
+        let l:off = l:match.end_col
+      endwhile
+    endfor
+
+    " Select current match.
+    let l:next = empty(l:next) ? l:prev : l:next
+    let l:prev = empty(l:prev) ? l:next : l:prev
+    let l:current = s:state.direction == s:Direction.Next ? l:next : l:prev
+    if !empty(l:current)
+      let l:current.current = v:true
+    endif
+
+    " forward match
+    for l:i in range(0, len(l:texts) - 1)
+      let l:text = l:texts[l:i]
+      let l:off = 0
+      while l:off < strlen(l:text)
+        let l:m = matchstrpos(l:text, a:input, l:off, 1)
+        if l:m[0] ==# ''
+          break
+        endif
+
+        let l:match = {
+        \   'id': len(l:matches) + 1,
+        \   'lnum': l:lnum_s + l:i,
+        \   'col': l:m[1] + 1,
+        \   'end_col': l:m[2] + 1,
+        \   'marker': get(g:searchx.markers, len(l:matches), v:null),
+        \   'current': v:false,
+        \ }
+
+        " echom len(l:matches)
+        " echom l:matches
+        " echom l:match
+
+"         " nearest next.
+"         if empty(l:next) && (a:curpos[0] < l:match.lnum || a:curpos[0] == l:match.lnum && a:curpos[1] <= l:match.col)
+"           let l:next = l:match
+"         endif
+
+"         " nearest prev.
+"         if a:curpos[0] > l:match.lnum || a:curpos[0] == l:match.lnum && a:curpos[1] >= l:match.col
+"           let l:prev = l:match
+"         endif
+
+        " " add match.
+        call add(l:matches, l:match)
+
+        let l:off = l:match.end_col
+      endwhile
+    endfor
+  
+    " Select current match.
+    let l:next = empty(l:next) ? l:prev : l:next
+    let l:prev = empty(l:prev) ? l:next : l:prev
+    let l:current = s:state.direction == s:Direction.Next ? l:next : l:prev
+    if !empty(l:current)
+      let l:current.current = v:true
+    endif
+
+    " echom l:matches
   endif
 
   return { 'matches': l:matches, 'current': l:current }

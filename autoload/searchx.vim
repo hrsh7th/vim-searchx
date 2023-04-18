@@ -333,11 +333,6 @@ function! s:find_matches(input, curpos) abort
   let l:lnum_start = line('w0')
   let l:lnum_s = a:curpos[0]
   let l:lnum_e = line('w$')
-  let l:texts = getbufline('%', l:lnum_s, l:lnum_e)
-
-  let l:texts_wrap = getbufline('%',l:lnum_start,  a:curpos[0] - 1)
-
-  call reverse(l:texts_wrap)
 
   if s:state.direction == 1
     echom "cat"
@@ -441,6 +436,10 @@ function! s:find_matches(input, curpos) abort
     let l:prev = v:null
     let l:matches = []
 
+    let l:texts = getbufline('%', l:lnum_s + 1, l:lnum_e)
+    let l:texts_wrap = getbufline('%',l:lnum_start,  a:curpos[0])
+    call reverse(l:texts_wrap)
+
 
     " wrap match
     
@@ -455,13 +454,14 @@ function! s:find_matches(input, curpos) abort
 
         let l:match = {
         \   'id': len(l:matches) + 1,
-        \   'lnum': l:lnum_s - l:i - 1,
+        \   'lnum': l:lnum_s - l:i,
         \   'col': l:m[1] + 1,
         \   'end_col': l:m[2] + 1,
         \   'marker': get(g:searchx.markers, len(l:matches), v:null),
         \   'current': v:false,
         \ }
 
+        echom l:match
         " nearest next.
         if empty(l:next) && (a:curpos[0] > l:match.lnum || a:curpos[0] == l:match.lnum && a:curpos[1] >= l:match.col)
           let l:next = l:match
@@ -482,7 +482,9 @@ function! s:find_matches(input, curpos) abort
     " Select current match.
     let l:next = empty(l:next) ? l:prev : l:next
     let l:prev = empty(l:prev) ? l:next : l:prev
-    let l:current = s:state.direction == s:Direction.Next ? l:next : l:prev
+
+    let l:current = l:next
+    " let l:current = s:state.direction == s:Direction.Next ? l:next : l:prev
     if !empty(l:current)
       let l:current.current = v:true
     endif
@@ -499,7 +501,7 @@ function! s:find_matches(input, curpos) abort
 
         let l:match = {
         \   'id': len(l:matches) + 1,
-        \   'lnum': l:lnum_s + l:i,
+        \   'lnum': l:lnum_s + l:i + 1,
         \   'col': l:m[1] + 1,
         \   'end_col': l:m[2] + 1,
         \   'marker': get(g:searchx.markers, len(l:matches), v:null),
@@ -527,16 +529,18 @@ function! s:find_matches(input, curpos) abort
       endwhile
     endfor
   
-    " Select current match.
-    let l:next = empty(l:next) ? l:prev : l:next
-    let l:prev = empty(l:prev) ? l:next : l:prev
-    let l:current = s:state.direction == s:Direction.Next ? l:next : l:prev
-    if !empty(l:current)
-      let l:current.current = v:true
-    endif
+    " " Select current match.
+    " let l:next = empty(l:next) ? l:prev : l:next
+    " let l:prev = empty(l:prev) ? l:next : l:prev
+    " " let l:current = s:state.direction == s:Direction.Next ? l:next : l:prev
+    " let l:current = l:next
+    " if !empty(l:current)
+    "   let l:current.current = v:true
+    " endif
 
     " echom l:matches
   endif
+
 
   return { 'matches': l:matches, 'current': l:current }
 endfunction

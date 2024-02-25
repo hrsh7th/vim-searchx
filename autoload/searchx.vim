@@ -272,14 +272,20 @@ function! s:on_input(...) abort
 
     " Search off-screen match.
     if empty(s:state.matches.matches)
+      echom "no matches"
+      echom s:state.direction
+
       silent noautocmd call winrestview(s:state.firstview)
       let l:next_pos = searchpos(@/, s:state.direction == s:Direction.Next ? 'zn' : 'bn')
       if l:next_pos[0] == 0
-        let s:state.direction = s:state.direction == s:Direction.Next ? s:Direction.Prev : s:Direction.Next
+        " let s:state.direction = s:state.direction == s:Direction.Next ? s:Direction.Prev : s:Direction.Next
       endif
       call searchx#next_dir()
     " Move to current match.
     else
+
+      echom "matches"
+      echom s:state.direction
 
       if s:state.matches.current isnot v:null
         call searchx#cursor#goto([s:state.matches.current.lnum, s:state.matches.current.col])
@@ -335,8 +341,8 @@ function! s:find_matches(input, curpos) abort
   let l:lnum_e = line('w$')
 
   if s:state.direction == 1
-    echom "cat"
-    echom "cat2"
+    " echom "cat"
+    " echom "cat2"
     let l:lnum_start = line('w0')
     let l:lnum_s = a:curpos[0]
     let l:lnum_e = line('w$')
@@ -430,7 +436,7 @@ function! s:find_matches(input, curpos) abort
     endif
 
   else
-    echom 'reverse'
+    " echom 'reverse'
 
     let l:next = v:null
     let l:prev = v:null
